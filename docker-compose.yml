@@ -1,0 +1,112 @@
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - core
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: ${BACKEND_PORT}
+      DB_HOST: db
+      DB_PORT: ${POSTGRES_PORT}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+      JWT_SECRET: ${BACKEND_JWT_SECRET}
+      DEFAULT_ADMIN_EMAIL: ${BACKEND_DEFAULT_ADMIN_EMAIL}
+      DEFAULT_ADMIN_PASSWORD: ${BACKEND_DEFAULT_ADMIN_PASSWORD}
+      DEFAULT_GROUP_NAME: ${BACKEND_DEFAULT_GROUP}
+      DEFAULT_GROUP_PERMISSIONS: ${BACKEND_DEFAULT_PERMISSIONS}
+      DEFAULT_CARRIER_NAME: ${BACKEND_DEFAULT_CARRIER}
+      DEFAULT_CARRIER_CALLER_ID: ${BACKEND_DEFAULT_CALLER_ID}
+      DEFAULT_CARRIER_DOMAIN: ${BACKEND_DEFAULT_CARRIER_DOMAIN}
+      DEFAULT_CARRIER_PORT: ${BACKEND_DEFAULT_CARRIER_PORT}
+      DEFAULT_CARRIER_TRANSPORT: ${BACKEND_DEFAULT_CARRIER_TRANSPORT}
+      FREESWITCH_HOST: ${FREESWITCH_EVENT_SOCKET_HOST}
+      FREESWITCH_PORT: ${FREESWITCH_EVENT_SOCKET_PORT}
+      FREESWITCH_PASSWORD: ${FREESWITCH_EVENT_SOCKET_PASS}
+      FREESWITCH_RECORDINGS_PATH: ${FREESWITCH_RECORDINGS_PATH}
+      FREESWITCH_GATEWAY_PATH: ${FREESWITCH_GATEWAY_PATH:-/var/lib/freeswitch/gateways}
+      FREESWITCH_SIP_PROFILE: ${FREESWITCH_SIP_PROFILE:-external}
+    depends_on:
+      - db
+      - freeswitch
+    ports:
+      - "${BACKEND_PORT}:4000"
+    volumes:
+      - ./freeswitch/conf/sip_profiles/external:/var/lib/freeswitch/gateways
+    networks:
+      - core
+
+  webportal:
+    build:
+      context: ./webportal
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      APP_URL: ${WEB_PORTAL_URL}
+      APP_ENV: production
+      APP_KEY: ${APP_KEY}
+      APP_DEBUG: "false"
+      LOG_CHANNEL: stack
+      SESSION_DRIVER: ${WEB_PORTAL_SESSION_DRIVER}
+      BACKEND_BASE_URL: ${BACKEND_BASE_URL}
+    depends_on:
+      - backend
+    volumes:
+      - ./webportal/laravel:/var/www/html
+    networks:
+      - core
+
+  web:
+    image: nginx:1.25-alpine
+    restart: unless-stopped
+    depends_on:
+      - webportal
+    volumes:
+      - ./webportal/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./webportal/laravel:/var/www/html
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    networks:
+      - core
+
+  freeswitch:
+    build:
+      context: ./freeswitch
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./freeswitch/conf:/etc/freeswitch
+      - ./freeswitch/recordings:${FREESWITCH_RECORDINGS_PATH:-/var/recordings}
+    ports:
+      - "5060:5060/udp"
+      - "5080:5080/udp"
+      - "5060:5060/tcp"
+      - "5080:5080/tcp"
+      - "8021:8021/tcp"
+    networks:
+      - core
+
+volumes:
+  db-data:
+
+networks:
+  core:
+    driver: bridge

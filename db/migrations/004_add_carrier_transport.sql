@@ -1,0 +1,2 @@
+ALTER TABLE carriers
+    ADD COLUMN IF NOT EXISTS transport TEXT NOT NULL DEFAULT 'udp';

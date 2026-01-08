@@ -1,0 +1,7 @@
+500 error root cause:
+Laravel’s storage and bootstrap/cache directories were mounted from the host with 755 permissions, so PHP-FPM inside the container (running as www-data) could not write session or log files. Every admin login request broke before reaching the backend, resulting in HTTP 500 from nginx/PHP.
+
+Resolution:
+Ensure the bind-mounted directories are writable by the container. From the project root run
+`chmod -R 777 webportal/laravel/storage webportal/laravel/bootstrap/cache`
+and keep those directories writable so Laravel can persist sessions and logs. After applying the permissions, reload the page or restart the webportal container to confirm `/admin/login` responds with 200 OK.

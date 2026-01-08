@@ -1,16 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
-    <section>
-        <form method="POST" action="{{ route('user.login.submit') }}">
+    <section class="card">
+        <header>
+            <h2 class="card-title">Dialer Login</h2>
+            <p class="card-subtitle">Enter your user credentials to launch the WebPhone experience.</p>
+        </header>
+        <form method="POST" action="{{ route('user.login.submit') }}" class="form-grid">
             @csrf
             <label>Email
-                <input type="email" name="email" value="{{ old('email') }}" required>
+                <input type="email" name="email" value="{{ old('email') }}" required placeholder="you@example.com">
             </label>
             <label>Password
-                <input type="password" name="password" required>
+                <input type="password" name="password" required placeholder="••••••••">
             </label>
-            <button type="submit">Login</button>
+            <div style="grid-column: 1 / -1; display:flex; justify-content:flex-end;">
+                <button type="submit" class="btn btn-primary">Enter dialer</button>
+            </div>
         </form>
     </section>
 @endsection

@@ -46,3 +46,8 @@ resources/views/admin/*
 !resources/views/dialer/
 resources/views/dialer/*
 !resources/views/dialer/index.blade.php
+!public/
+public/*
+!public/css/
+public/css/*
+!public/css/portal.css

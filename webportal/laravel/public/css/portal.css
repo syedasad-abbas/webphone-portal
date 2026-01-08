@@ -1,0 +1,330 @@
+:root {
+    --bg: #f4f9ff;
+    --bg-card: #ffffff;
+    --bg-card-light: #eef5ff;
+    --text: #102542;
+    --text-muted: #6a7a96;
+    --accent: #18a4ff;
+    --accent-soft: rgba(24, 164, 255, 0.18);
+    --accent-strong: #0e87d7;
+    --success: #0fbf71;
+    --danger: #ff5f6d;
+    --warning: #f7b731;
+    --card-border: rgba(14, 135, 215, 0.12);
+    --table-stripe: rgba(16, 37, 66, 0.03);
+    font-size: 16px;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--text);
+    background: linear-gradient(180deg, #eaf4ff 0%, #ffffff 60%, #f6fbff 100%);
+}
+
+.app-shell {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3rem clamp(1rem, 4vw, 3rem) 4rem;
+}
+
+.glass-panel {
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--card-border);
+    padding: clamp(1.5rem, 3vw, 3rem);
+    box-shadow: 0 35px 80px rgba(14, 135, 215, 0.12);
+}
+
+.hero {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+}
+
+.hero h1 {
+    font-size: clamp(1.8rem, 4vw, 2.75rem);
+    margin: 0;
+}
+
+.hero p {
+    margin: 0.35rem 0 0;
+    color: var(--text-muted);
+}
+
+.pill-nav {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.pill-nav a,
+.pill-nav button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.55rem 1.25rem;
+    border-radius: 999px;
+    text-decoration: none;
+    border: 1px solid rgba(14, 135, 215, 0.18);
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--bg-card-light);
+    color: var(--text);
+    transition: all 0.2s ease;
+}
+
+.pill-nav button {
+    border: none;
+    font: inherit;
+}
+
+.pill-nav a:hover,
+.pill-nav button:hover {
+    background: rgba(24, 164, 255, 0.15);
+    color: var(--accent-strong);
+}
+
+.card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    border: 1px solid var(--card-border);
+    padding: 1.75rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 25px 50px rgba(15, 51, 98, 0.12);
+}
+
+.card header {
+    margin-bottom: 1.25rem;
+}
+
+.card-title {
+    margin: 0;
+    font-size: 1.45rem;
+}
+
+.card-subtitle {
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
+}
+
+form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+input,
+select,
+textarea {
+    background: #f5f9ff;
+    border: 1px solid rgba(14, 135, 215, 0.15);
+    border-radius: 14px;
+    padding: 0.85rem;
+    color: var(--text);
+    font-size: 1rem;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(24, 164, 255, 0.2);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+}
+
+.btn {
+    border: none;
+    border-radius: 14px;
+    padding: 0.85rem 1.35rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+}
+
+.btn-primary {
+    background: linear-gradient(120deg, var(--accent), var(--accent-strong));
+    color: #fff;
+    box-shadow: 0 12px 25px rgba(24, 164, 255, 0.3);
+}
+
+.btn-ghost {
+    background: rgba(24, 164, 255, 0.08);
+    color: var(--accent-strong);
+}
+
+.btn-danger {
+    background: linear-gradient(120deg, #ff7b7b, #ff4d5a);
+    color: #fff;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+thead {
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+th,
+td {
+    padding: 0.85rem;
+    border-bottom: 1px solid var(--card-border);
+}
+
+tbody tr:nth-child(odd) {
+    background: var(--table-stripe);
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    background: rgba(24, 164, 255, 0.08);
+    color: var(--text-muted);
+}
+
+.badge::before {
+    content: '';
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.badge-success {
+    background: rgba(15, 191, 113, 0.15);
+    color: var(--success);
+}
+
+.badge-danger {
+    background: rgba(255, 95, 109, 0.18);
+    color: var(--danger);
+}
+
+.alert {
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(14, 135, 215, 0.12);
+}
+
+.alert-success {
+    background: rgba(15, 191, 113, 0.12);
+    color: var(--success);
+}
+
+.alert-error {
+    background: rgba(255, 95, 109, 0.15);
+    color: var(--danger);
+}
+
+.call-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.call-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.call-actions button {
+    border-radius: 16px;
+    padding: 0.9rem;
+    font-weight: 600;
+}
+
+.status-chip {
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(24, 164, 255, 0.08);
+    color: var(--text-muted);
+}
+
+.status-chip::before {
+    content: '';
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.status-chip.ready {
+    color: var(--success);
+    background: rgba(15, 191, 113, 0.15);
+}
+
+.status-chip.error {
+    color: var(--danger);
+    background: rgba(255, 95, 109, 0.2);
+}
+
+.divider {
+    height: 1px;
+    background: var(--card-border);
+    margin: 2rem 0;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+@media (max-width: 640px) {
+    .hero {
+        flex-direction: column;
+    }
+
+    .glass-panel {
+        padding: 1.5rem;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+    }
+}

@@ -68,7 +68,7 @@ All services share the `core` Docker network for simple hostnames (`backend`, `d
 * `freeswitch/recordings/` is bind-mounted into the container at `${FREESWITCH_RECORDINGS_PATH}` (default `/var/recordings`) so the audio files created by the automatic recordings are persisted on the host.
 * `freeswitch/conf/sip_profiles/external/` is also bind-mounted into the backend container at `${FREESWITCH_GATEWAY_PATH}` so carrier registrations can be provisioned by simply creating/updating XML gateway files from Node.js.
 * The Event Socket listener binds to `0.0.0.0:8021` and uses a permissive ACL (`allow_coders`) so the Node backend can originate calls and drive mid-call controls.
-* If you need SIP trunks or gateways, add them under `conf/sip_profiles/` and point the carrier’s domain/port at that trunk. The backend now builds SIP URIs dynamically (e.g., `sofia/external/18005551212@sip.provider.com:5060`) so no prefix value is required.
+* If you need SIP trunks or gateways, add them under `conf/sip_profiles/` and point the carrier’s domain/port at that trunk. The backend now builds SIP URIs dynamically (e.g., `sofia/external/18005551212@sip.provider.com:5062`) so no prefix value is required.
 
 ---
 
@@ -96,7 +96,7 @@ All services share the `core` Docker network for simple hostnames (`backend`, `d
    * Laravel portal: http://localhost:8080 (`/dialer` opens the live call window with mute/unmute/speaker/end controls once a call is queued)
    * Backend API: http://localhost:4000 (health check at `/health`)
    * PostgreSQL: localhost:5432 (credentials from `.env`)
-   * FreeSWITCH: SIP on `5060/5080` (UDP/TCP), ESL on `8021/tcp`
+* FreeSWITCH: SIP on `5062/5082` (UDP/TCP), ESL on `8021/tcp`
 
 4. **Login + usage flow**
    * Browse to `/admin/login`, authenticate with the default admin credentials you set, and provision users. The UI automatically fetches available groups and carriers, and records toggle defaults.

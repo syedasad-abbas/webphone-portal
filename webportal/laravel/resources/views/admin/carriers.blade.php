@@ -110,7 +110,7 @@
                 <input type="text" name="sipDomain" value="{{ old('sipDomain') }}" placeholder="sip.provider.com" required>
             </label>
             <label>Port <span style="color:var(--warning);">*</span>
-                <input type="number" name="sipPort" value="{{ old('sipPort', 5060) }}" min="1" max="65535" required>
+                <input type="number" name="sipPort" value="{{ old('sipPort', 5062) }}" min="1" max="65535" required>
             </label>
             <label style="grid-column:1/-1; flex-direction:row; align-items:center; gap:0.6rem;">
                 <input type="checkbox" name="registrationRequired" value="1" {{ old('registrationRequired') ? 'checked' : '' }}>

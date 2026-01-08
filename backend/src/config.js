@@ -55,7 +55,7 @@ module.exports = {
     carrierName: process.env.DEFAULT_CARRIER_NAME || 'Default Carrier',
     carrierCallerId: process.env.DEFAULT_CARRIER_CALLER_ID || '1000',
     carrierDomain: optionalEnv(process.env.DEFAULT_CARRIER_DOMAIN, '127.0.0.1'),
-    carrierPort: toInt(process.env.DEFAULT_CARRIER_PORT, 5060),
+    carrierPort: toInt(process.env.DEFAULT_CARRIER_PORT, 5062),
     carrierTransport: sanitizeTransport(process.env.DEFAULT_CARRIER_TRANSPORT, 'udp')
   }
 };

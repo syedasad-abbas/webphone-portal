@@ -96,10 +96,10 @@ services:
       - ./freeswitch/conf:/etc/freeswitch
       - ./freeswitch/recordings:${FREESWITCH_RECORDINGS_PATH:-/var/recordings}
     ports:
-      - "5060:5060/udp"
-      - "5080:5080/udp"
-      - "5060:5060/tcp"
-      - "5080:5080/tcp"
+      - "5062:5062/udp"
+      - "5082:5082/udp"
+      - "5062:5062/tcp"
+      - "5082:5082/tcp"
       - "8021:8021/tcp"
     networks:
       - core

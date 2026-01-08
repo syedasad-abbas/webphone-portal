@@ -61,7 +61,7 @@ VALUES ('Standard User', '["dial","view_self_cdr"]'::jsonb)
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO carriers (name, default_caller_id, sip_domain, sip_port, transport, registration_required)
-VALUES ('Default Carrier', '1000', '127.0.0.1', 5060, 'udp', false)
+VALUES ('Default Carrier', '1000', '127.0.0.1', 5062, 'udp', false)
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO users (full_name, email, password_hash, role, group_id, carrier_id, recording_enabled)

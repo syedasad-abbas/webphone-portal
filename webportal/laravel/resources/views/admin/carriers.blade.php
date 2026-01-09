@@ -95,8 +95,14 @@
             <label>Name <span style="color:var(--warning);">*</span>
                 <input type="text" name="name" value="{{ old('name') }}" required placeholder="Provider name">
             </label>
-            <label>Default Caller ID <span style="color:var(--warning);">*</span>
-                <input type="text" name="callerId" value="{{ old('callerId') }}" required placeholder="1000">
+            <label>Default Caller ID
+                <input type="text" name="callerId" value="{{ old('callerId') }}" placeholder="Optional caller ID">
+            </label>
+            <label>Prefix (optional)
+                <input type="text" name="prefix" value="{{ old('prefix') }}" placeholder="e.g. 100">
+            </label>
+            <label>Prefix Caller ID
+                <input type="text" name="prefixCallerId" value="{{ old('prefixCallerId') }}" placeholder="Overrides default for prefix">
             </label>
             <label>Transport
                 @php($selectedTransport = old('transport', 'udp'))

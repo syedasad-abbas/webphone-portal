@@ -35,19 +35,23 @@ class CarrierController extends Controller
         $token = $request->session()->get('admin_token');
         $data = $request->validate([
             'name' => ['required', 'string'],
-            'callerId' => ['required', 'string'],
+            'callerId' => ['nullable', 'string'],
             'transport' => ['required', 'in:udp,tcp,tls'],
             'sipDomain' => ['required', 'string'],
             'sipPort' => ['required', 'integer', 'min:1', 'max:65535'],
             'registrationRequired' => ['nullable', 'boolean'],
             'registrationUsername' => ['nullable', 'string'],
             'registrationPassword' => ['nullable', 'string'],
+            'prefix' => ['nullable', 'string'],
+            'prefixCallerId' => ['nullable', 'string'],
         ]);
 
         $payload = $data;
         $payload['registrationRequired'] = $request->boolean('registrationRequired');
         $payload['registrationUsername'] = filled($data['registrationUsername'] ?? null) ? $data['registrationUsername'] : null;
         $payload['registrationPassword'] = filled($data['registrationPassword'] ?? null) ? $data['registrationPassword'] : null;
+        $payload['prefix'] = filled($data['prefix'] ?? null) ? $data['prefix'] : null;
+        $payload['prefixCallerId'] = filled($data['prefixCallerId'] ?? null) ? $data['prefixCallerId'] : null;
 
         $response = $this->backend($token)->post('/admin/carriers', $payload);
         if ($response->failed()) {
@@ -64,7 +68,9 @@ class CarrierController extends Controller
         $token = $request->session()->get('admin_token');
         $carrierResponse = $this->backend($token)->get("/admin/carriers/{$carrierId}");
         if ($carrierResponse->failed()) {
-            return redirect()->route('admin.carriers.index')->withErrors('Carrier not found.');
+            return redirect()->route('admin.carriers.index')->withErrors([
+                'carrier' => 'Carrier not found.'
+            ]);
         }
 
         return view('admin.edit-carrier', [
@@ -77,19 +83,23 @@ class CarrierController extends Controller
         $token = $request->session()->get('admin_token');
         $data = $request->validate([
             'name' => ['required', 'string'],
-            'callerId' => ['required', 'string'],
+            'callerId' => ['nullable', 'string'],
             'transport' => ['required', 'in:udp,tcp,tls'],
             'sipDomain' => ['required', 'string'],
             'sipPort' => ['required', 'integer', 'min:1', 'max:65535'],
             'registrationRequired' => ['nullable', 'boolean'],
             'registrationUsername' => ['nullable', 'string'],
             'registrationPassword' => ['nullable', 'string'],
+            'prefix' => ['nullable', 'string'],
+            'prefixCallerId' => ['nullable', 'string'],
         ]);
 
         $payload = $data;
         $payload['registrationRequired'] = $request->boolean('registrationRequired');
         $payload['registrationUsername'] = filled($data['registrationUsername'] ?? null) ? $data['registrationUsername'] : null;
         $payload['registrationPassword'] = filled($data['registrationPassword'] ?? null) ? $data['registrationPassword'] : null;
+        $payload['prefix'] = filled($data['prefix'] ?? null) ? $data['prefix'] : null;
+        $payload['prefixCallerId'] = filled($data['prefixCallerId'] ?? null) ? $data['prefixCallerId'] : null;
 
         $response = $this->backend($token)->put("/admin/carriers/{$carrierId}", $payload);
         if ($response->failed()) {

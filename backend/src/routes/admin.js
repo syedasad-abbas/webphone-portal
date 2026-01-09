@@ -5,6 +5,7 @@ const userService = require('../services/userService');
 const groupService = require('../services/groupService');
 const carrierService = require('../services/carrierService');
 const { authenticate } = require('../middleware/auth');
+const config = require('../config');
 
 const router = express.Router();
 
@@ -139,13 +140,15 @@ router.get('/carriers/:carrierId', authenticate('admin'), async (req, res) => {
 router.post('/carriers', authenticate('admin'), async (req, res) => {
   const schema = Joi.object({
     name: Joi.string().required(),
-    callerId: Joi.string().required(),
+    callerId: Joi.string().allow('', null),
     transport: Joi.string().valid('udp', 'tcp', 'tls').default('udp'),
     sipDomain: Joi.string().required(),
     sipPort: Joi.number().integer().min(1).max(65535).required(),
     registrationRequired: Joi.boolean().default(false),
     registrationUsername: Joi.string().allow('', null),
-    registrationPassword: Joi.string().allow('', null)
+    registrationPassword: Joi.string().allow('', null),
+    prefix: Joi.string().allow('', null),
+    prefixCallerId: Joi.string().allow('', null)
   });
 
   const { error, value } = schema.validate(req.body);
@@ -153,20 +156,36 @@ router.post('/carriers', authenticate('admin'), async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 
-  const carrier = await carrierService.createCarrier(value);
-  return res.status(201).json(carrier);
+  try {
+    let carrier = await carrierService.createCarrier(value);
+    if (value.prefix) {
+      const prefixCaller =
+        value.prefixCallerId || value.callerId || config.defaults.carrierCallerId || null;
+      await carrierService.addPrefix({
+        carrierId: carrier.id,
+        prefix: value.prefix,
+        callerId: prefixCaller
+      });
+      carrier = await carrierService.getCarrierById(carrier.id);
+    }
+    return res.status(201).json(carrier);
+  } catch (err) {
+    return res.status(400).json({ message: err.message || 'Unable to create carrier' });
+  }
 });
 
 router.put('/carriers/:carrierId', authenticate('admin'), async (req, res) => {
   const schema = Joi.object({
     name: Joi.string().optional(),
-    callerId: Joi.string().optional(),
+    callerId: Joi.string().allow('', null).optional(),
     transport: Joi.string().valid('udp', 'tcp', 'tls').optional(),
     sipDomain: Joi.string().allow('', null).optional(),
     sipPort: Joi.number().integer().min(1).max(65535).allow(null).optional(),
     registrationRequired: Joi.boolean().optional(),
     registrationUsername: Joi.string().allow('', null).optional(),
-    registrationPassword: Joi.string().allow('', null).optional()
+    registrationPassword: Joi.string().allow('', null).optional(),
+    prefix: Joi.string().allow('', null),
+    prefixCallerId: Joi.string().allow('', null)
   });
 
   const { error, value } = schema.validate(req.body);
@@ -174,8 +193,22 @@ router.put('/carriers/:carrierId', authenticate('admin'), async (req, res) => {
     return res.status(400).json({ message: error.message });
   }
 
-  const carrier = await carrierService.updateCarrier(req.params.carrierId, value);
-  return res.json(carrier);
+  try {
+    let carrier = await carrierService.updateCarrier(req.params.carrierId, value);
+    if (value.prefix) {
+      const prefixCaller =
+        value.prefixCallerId || value.callerId || carrier.default_caller_id || config.defaults.carrierCallerId || null;
+      await carrierService.addPrefix({
+        carrierId: carrier.id,
+        prefix: value.prefix,
+        callerId: prefixCaller
+      });
+      carrier = await carrierService.getCarrierById(carrier.id);
+    }
+    return res.json(carrier);
+  } catch (err) {
+    return res.status(400).json({ message: err.message || 'Unable to update carrier' });
+  }
 });
 
 router.delete('/carriers/:carrierId', authenticate('admin'), async (req, res) => {

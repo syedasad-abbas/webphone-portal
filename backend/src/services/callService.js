@@ -43,7 +43,8 @@ const originate = async ({ user, destination, callerId }) => {
   }
 
   const record = userResult.rows[0];
-  const resolvedCallerId = callerId || record.default_caller_id;
+  const fallbackCallerId = config.defaults.carrierCallerId || '1000';
+  const resolvedCallerId = callerId || record.default_caller_id || fallbackCallerId;
   const recordingEnabled = record.recording_enabled;
   const recordingPath = recordingEnabled
     ? `${config.freeswitch.recordingsPath}/${user.id}-${Date.now()}.wav`

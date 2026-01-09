@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS groups (
 CREATE TABLE IF NOT EXISTS carriers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT UNIQUE NOT NULL,
-    default_caller_id TEXT NOT NULL,
+    default_caller_id TEXT,
     sip_domain TEXT,
     sip_port INTEGER,
     transport TEXT NOT NULL DEFAULT 'udp',
@@ -25,9 +25,15 @@ CREATE TABLE IF NOT EXISTS carrier_prefixes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     carrier_id UUID NOT NULL REFERENCES carriers(id) ON DELETE CASCADE,
     prefix TEXT NOT NULL,
-    caller_id TEXT NOT NULL,
+    caller_id TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE carriers
+    ALTER COLUMN default_caller_id DROP NOT NULL;
+
+ALTER TABLE carrier_prefixes
+    ALTER COLUMN caller_id DROP NOT NULL;
 
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

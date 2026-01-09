@@ -99,7 +99,7 @@ const createCarrier = async ({
      RETURNING id, name, default_caller_id, sip_domain, sip_port, transport, registration_required, registration_username, registration_password`,
     [
       name,
-      callerId,
+      callerId || null,
       sipDomain,
       sipPort || null,
       transport || 'udp',
@@ -122,10 +122,12 @@ const updateCarrier = async (
   carrierId,
   { name, callerId, sipDomain, sipPort, transport, registrationRequired, registrationUsername, registrationPassword }
 ) => {
+  const shouldUpdateCallerId = callerId !== undefined;
+  const normalizedCallerId = callerId || null;
   const result = await db.query(
     `UPDATE carriers
      SET name = COALESCE($2, name),
-         default_caller_id = COALESCE($3, default_caller_id),
+         default_caller_id = CASE WHEN $10 THEN $3 ELSE default_caller_id END,
          sip_domain = COALESCE($4, sip_domain),
          sip_port = COALESCE($5, sip_port),
          transport = COALESCE($6, transport),
@@ -137,13 +139,14 @@ const updateCarrier = async (
     [
       carrierId,
       name,
-      callerId,
+      normalizedCallerId,
       sipDomain,
       sipPort,
       transport,
       registrationRequired,
       registrationUsername,
-      registrationPassword || null
+      registrationPassword || null,
+      shouldUpdateCallerId
     ]
   );
   const carrier = result.rows[0];

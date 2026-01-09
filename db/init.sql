@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS carriers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT UNIQUE NOT NULL,
     default_caller_id TEXT,
+    caller_id_required BOOLEAN NOT NULL DEFAULT TRUE,
     sip_domain TEXT,
     sip_port INTEGER,
     transport TEXT NOT NULL DEFAULT 'udp',
@@ -52,7 +53,7 @@ CREATE TABLE IF NOT EXISTS call_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id),
     destination TEXT NOT NULL,
-    caller_id TEXT NOT NULL,
+    caller_id TEXT,
     status TEXT NOT NULL,
     recording_path TEXT,
     call_uuid UUID,
@@ -66,8 +67,8 @@ INSERT INTO groups (name, permissions)
 VALUES ('Standard User', '["dial","view_self_cdr"]'::jsonb)
 ON CONFLICT (name) DO NOTHING;
 
-INSERT INTO carriers (name, default_caller_id, sip_domain, sip_port, transport, registration_required)
-VALUES ('Default Carrier', '1000', '127.0.0.1', 5062, 'udp', false)
+INSERT INTO carriers (name, default_caller_id, caller_id_required, sip_domain, sip_port, transport, registration_required)
+VALUES ('Default Carrier', '1000', true, '127.0.0.1', 5062, 'udp', false)
 ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO users (full_name, email, password_hash, role, group_id, carrier_id, recording_enabled)

@@ -71,11 +71,11 @@ const sendCommand = (command) =>
   });
 
 const originateCall = async ({ destination, callerId, gateway, recordingPath, endpoint, variables = [] }) => {
-  const vars = [
-    `origination_caller_id_number=${callerId}`,
-    'originate_timeout=30',
-    'ignore_early_media=true'
-  ];
+  const vars = ['originate_timeout=30', 'ignore_early_media=true'];
+
+  if (callerId) {
+    vars.unshift(`origination_caller_id_number=${callerId}`);
+  }
 
   if (recordingPath) {
     vars.push(`execute_on_answer=record_session::${recordingPath}`);

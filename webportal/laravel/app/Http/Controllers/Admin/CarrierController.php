@@ -36,6 +36,7 @@ class CarrierController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string'],
             'callerId' => ['nullable', 'string'],
+            'callerIdRequired' => ['nullable', 'boolean'],
             'transport' => ['required', 'in:udp,tcp,tls'],
             'sipDomain' => ['required', 'string'],
             'sipPort' => ['required', 'integer', 'min:1', 'max:65535'],
@@ -47,6 +48,7 @@ class CarrierController extends Controller
 
         $payload = $data;
         $payload['registrationRequired'] = $request->boolean('registrationRequired');
+        $payload['callerIdRequired'] = $request->boolean('callerIdRequired', true);
         $payload['registrationUsername'] = filled($data['registrationUsername'] ?? null) ? $data['registrationUsername'] : null;
         $payload['registrationPassword'] = filled($data['registrationPassword'] ?? null) ? $data['registrationPassword'] : null;
         $payload['prefix'] = filled($data['prefix'] ?? null) ? $data['prefix'] : null;
@@ -82,6 +84,7 @@ class CarrierController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string'],
             'callerId' => ['nullable', 'string'],
+            'callerIdRequired' => ['nullable', 'boolean'],
             'transport' => ['required', 'in:udp,tcp,tls'],
             'sipDomain' => ['required', 'string'],
             'sipPort' => ['required', 'integer', 'min:1', 'max:65535'],
@@ -93,6 +96,7 @@ class CarrierController extends Controller
 
         $payload = $data;
         $payload['registrationRequired'] = $request->boolean('registrationRequired');
+        $payload['callerIdRequired'] = $request->boolean('callerIdRequired');
         $payload['registrationUsername'] = filled($data['registrationUsername'] ?? null) ? $data['registrationUsername'] : null;
         $payload['registrationPassword'] = filled($data['registrationPassword'] ?? null) ? $data['registrationPassword'] : null;
         $payload['prefix'] = filled($data['prefix'] ?? null) ? $data['prefix'] : null;

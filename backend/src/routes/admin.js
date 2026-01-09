@@ -141,6 +141,7 @@ router.post('/carriers', authenticate('admin'), async (req, res) => {
   const schema = Joi.object({
     name: Joi.string().required(),
     callerId: Joi.string().allow('', null),
+    callerIdRequired: Joi.boolean().default(true),
     transport: Joi.string().valid('udp', 'tcp', 'tls').default('udp'),
     sipDomain: Joi.string().required(),
     sipPort: Joi.number().integer().min(1).max(65535).required(),
@@ -178,6 +179,7 @@ router.put('/carriers/:carrierId', authenticate('admin'), async (req, res) => {
   const schema = Joi.object({
     name: Joi.string().optional(),
     callerId: Joi.string().allow('', null).optional(),
+    callerIdRequired: Joi.boolean().optional(),
     transport: Joi.string().valid('udp', 'tcp', 'tls').optional(),
     sipDomain: Joi.string().allow('', null).optional(),
     sipPort: Joi.number().integer().min(1).max(65535).allow(null).optional(),

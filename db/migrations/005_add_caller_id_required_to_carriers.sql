@@ -1,0 +1,2 @@
+ALTER TABLE carriers
+    ADD COLUMN IF NOT EXISTS caller_id_required BOOLEAN NOT NULL DEFAULT true;

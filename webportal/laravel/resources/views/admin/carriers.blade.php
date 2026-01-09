@@ -98,6 +98,12 @@
             <label>Default Caller ID
                 <input type="text" name="callerId" value="{{ old('callerId') }}" placeholder="Optional caller ID">
             </label>
+            @php($requiresCallerId = old('callerIdRequired', '1'))
+            <label style="grid-column:1/-1; flex-direction:row; align-items:center; gap:0.6rem;">
+                <input type="hidden" name="callerIdRequired" value="0">
+                <input type="checkbox" name="callerIdRequired" value="1" {{ $requiresCallerId === '1' ? 'checked' : '' }}>
+                Requires Caller ID
+            </label>
             <label>Prefix (optional)
                 <input type="text" name="prefix" value="{{ old('prefix') }}" placeholder="e.g. 100">
             </label>

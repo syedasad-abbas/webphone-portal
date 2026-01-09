@@ -21,10 +21,11 @@ const ensureDefaults = async () => {
     let carrierId = carrierResult.rows[0]?.id;
     if (!carrierId) {
       const insertCarrier = await client.query(
-        'INSERT INTO carriers (name, default_caller_id, sip_domain, sip_port, transport) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+        'INSERT INTO carriers (name, default_caller_id, caller_id_required, sip_domain, sip_port, transport) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
         [
           config.defaults.carrierName,
           config.defaults.carrierCallerId,
+          true,
           config.defaults.carrierDomain,
           config.defaults.carrierPort,
           config.defaults.carrierTransport

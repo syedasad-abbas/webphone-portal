@@ -9,7 +9,9 @@
 	 loopback.auto - ACL for your local lan.
     -->
       <list name="allow_coders" default="deny">
-  <node type="allow" cidr="172.23.0.0/16"/>
+  <node type="allow" cidr="10.0.0.0/8"/>
+  <node type="allow" cidr="172.16.0.0/12"/>
+  <node type="allow" cidr="192.168.0.0/16"/>
   <node type="allow" cidr="127.0.0.1/32"/>
 </list>
 
@@ -33,4 +35,3 @@
 
   </network-lists>
 </configuration>
-

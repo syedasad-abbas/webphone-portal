@@ -63,6 +63,7 @@ const listCarriers = async () => {
     `SELECT c.id,
             c.name,
             c.default_caller_id,
+            c.caller_id_required,
             c.sip_domain,
             c.sip_port,
             c.transport,
@@ -86,6 +87,7 @@ const listCarriers = async () => {
 const createCarrier = async ({
   name,
   callerId,
+  callerIdRequired,
   sipDomain,
   sipPort,
   transport,
@@ -94,12 +96,13 @@ const createCarrier = async ({
   registrationPassword
 }) => {
   const result = await db.query(
-    `INSERT INTO carriers (name, default_caller_id, sip_domain, sip_port, transport, registration_required, registration_username, registration_password)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-     RETURNING id, name, default_caller_id, sip_domain, sip_port, transport, registration_required, registration_username, registration_password`,
+    `INSERT INTO carriers (name, default_caller_id, caller_id_required, sip_domain, sip_port, transport, registration_required, registration_username, registration_password)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+     RETURNING id, name, default_caller_id, caller_id_required, sip_domain, sip_port, transport, registration_required, registration_username, registration_password`,
     [
       name,
       callerId || null,
+      callerIdRequired !== undefined ? callerIdRequired : true,
       sipDomain,
       sipPort || null,
       transport || 'udp',
@@ -120,26 +123,38 @@ const createCarrier = async ({
 
 const updateCarrier = async (
   carrierId,
-  { name, callerId, sipDomain, sipPort, transport, registrationRequired, registrationUsername, registrationPassword }
+  {
+    name,
+    callerId,
+    callerIdRequired,
+    sipDomain,
+    sipPort,
+    transport,
+    registrationRequired,
+    registrationUsername,
+    registrationPassword
+  }
 ) => {
   const shouldUpdateCallerId = callerId !== undefined;
   const normalizedCallerId = callerId || null;
   const result = await db.query(
     `UPDATE carriers
      SET name = COALESCE($2, name),
-         default_caller_id = CASE WHEN $10 THEN $3 ELSE default_caller_id END,
-         sip_domain = COALESCE($4, sip_domain),
-         sip_port = COALESCE($5, sip_port),
-         transport = COALESCE($6, transport),
-         registration_required = COALESCE($7, registration_required),
-         registration_username = COALESCE($8, registration_username),
-         registration_password = COALESCE(NULLIF($9, ''), registration_password)
+         default_caller_id = CASE WHEN $11 THEN $3 ELSE default_caller_id END,
+         caller_id_required = COALESCE($4, caller_id_required),
+         sip_domain = COALESCE($5, sip_domain),
+         sip_port = COALESCE($6, sip_port),
+         transport = COALESCE($7, transport),
+         registration_required = COALESCE($8, registration_required),
+         registration_username = COALESCE($9, registration_username),
+         registration_password = COALESCE(NULLIF($10, ''), registration_password)
      WHERE id = $1
-     RETURNING id, name, default_caller_id, sip_domain, sip_port, transport, registration_required, registration_username, registration_password`,
+     RETURNING id, name, default_caller_id, caller_id_required, sip_domain, sip_port, transport, registration_required, registration_username, registration_password`,
     [
       carrierId,
       name,
       normalizedCallerId,
+      callerIdRequired,
       sipDomain,
       sipPort,
       transport,
@@ -172,6 +187,7 @@ const getCarrierById = async (carrierId) => {
     `SELECT id,
             name,
             default_caller_id,
+            caller_id_required,
             sip_domain,
             sip_port,
             transport,

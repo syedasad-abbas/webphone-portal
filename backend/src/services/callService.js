@@ -19,14 +19,38 @@ const logCall = async ({ userId, destination, callerId, status, recordingPath, c
   );
 };
 
+const selectCarrierPrefix = (prefixes, normalizedDestination) => {
+  if (!Array.isArray(prefixes) || prefixes.length === 0) {
+    return null;
+  }
+  const digits = (normalizedDestination || '').replace(/^\+/, '');
+  const matchingPrefixes = prefixes
+    .filter((entry) => entry.prefix && digits.startsWith(entry.prefix))
+    .sort((a, b) => b.prefix.length - a.prefix.length);
+  if (matchingPrefixes.length > 0) {
+    return matchingPrefixes[0];
+  }
+  return prefixes.find((entry) => entry.prefix) || null;
+};
+
+const applyDialPrefix = (normalizedDestination, prefixEntry) => {
+  if (!prefixEntry?.prefix) {
+    return normalizedDestination;
+  }
+  const digits = (normalizedDestination || '').replace(/^\+/, '');
+  return `${prefixEntry.prefix}${digits}`;
+};
+
 const originate = async ({ user, destination, callerId }) => {
   const originationUuid = randomUUID();
   const normalizedDestination = normalizeDestination(destination);
   const userResult = await db.query(
     `SELECT users.id,
+            users.carrier_id,
             users.full_name,
             users.recording_enabled,
             carriers.default_caller_id,
+            carriers.caller_id_required,
             carriers.sip_domain,
             carriers.sip_port,
             carriers.transport,
@@ -43,8 +67,25 @@ const originate = async ({ user, destination, callerId }) => {
   }
 
   const record = userResult.rows[0];
-  const fallbackCallerId = config.defaults.carrierCallerId || '1000';
-  const resolvedCallerId = callerId || record.default_caller_id || fallbackCallerId;
+  const fallbackCallerId = config.defaults.carrierCallerId || null;
+  let prefixEntries = [];
+  if (record.carrier_id) {
+    const prefixResult = await db.query(
+      `SELECT prefix, caller_id
+         FROM carrier_prefixes
+        WHERE carrier_id = $1
+        ORDER BY created_at ASC`,
+      [record.carrier_id]
+    );
+    prefixEntries = prefixResult.rows || [];
+  }
+  const selectedPrefix = selectCarrierPrefix(prefixEntries, normalizedDestination);
+  const prefixedDestination = applyDialPrefix(normalizedDestination, selectedPrefix);
+  const prefixCallerId = selectedPrefix?.caller_id || null;
+  let resolvedCallerId = callerId || prefixCallerId || record.default_caller_id || null;
+  if (!resolvedCallerId && record.caller_id_required) {
+    resolvedCallerId = fallbackCallerId;
+  }
   const recordingEnabled = record.recording_enabled;
   const recordingPath = recordingEnabled
     ? `${config.freeswitch.recordingsPath}/${user.id}-${Date.now()}.wav`
@@ -55,7 +96,7 @@ const originate = async ({ user, destination, callerId }) => {
   }
 
   const domainPart = record.sip_port ? `${record.sip_domain}:${record.sip_port}` : record.sip_domain;
-  const endpoint = `sofia/external/${normalizedDestination}@${domainPart}`;
+  const endpoint = `sofia/external/${prefixedDestination}@${domainPart}`;
   const transport = (record.transport || 'udp').toLowerCase();
   const channelVars = [
     `sip_transport=${transport}`,

@@ -59,29 +59,51 @@ const hydrateCarrier = async (carrier) => ({
 });
 
 const listCarriers = async () => {
-  const result = await db.query(
-    `SELECT c.id,
-            c.name,
-            c.default_caller_id,
-            c.caller_id_required,
-            c.sip_domain,
-            c.sip_port,
-            c.transport,
-            c.registration_required,
-            c.registration_username,
-            json_agg(
-              json_build_object(
-                'id', p.id,
-                'prefix', p.prefix,
-                'callerId', p.caller_id
-              )
-            ) FILTER (WHERE p.id IS NOT NULL) AS prefixes
-     FROM carriers c
-     LEFT JOIN carrier_prefixes p ON p.carrier_id = c.id
-     GROUP BY c.id
-     ORDER BY c.created_at DESC`
-  );
-  return Promise.all(result.rows.map(hydrateCarrier));
+  try {
+    const result = await db.query(
+      `SELECT c.id,
+              c.name,
+              c.default_caller_id,
+              c.caller_id_required,
+              c.sip_domain,
+              c.sip_port,
+              c.transport,
+              c.registration_required,
+              c.registration_username,
+              json_agg(
+                json_build_object(
+                  'id', p.id,
+                  'prefix', p.prefix,
+                  'callerId', p.caller_id
+                )
+              ) FILTER (WHERE p.id IS NOT NULL) AS prefixes
+       FROM carriers c
+       LEFT JOIN carrier_prefixes p ON p.carrier_id = c.id
+       GROUP BY c.id
+       ORDER BY c.created_at DESC`
+    );
+    return Promise.all(result.rows.map(hydrateCarrier));
+  } catch (err) {
+    if (err && (err.code === '42P01' || err.code === '42703')) {
+      const fallback = await db.query(
+        `SELECT *
+         FROM carriers
+         ORDER BY created_at DESC`
+      );
+      return Promise.all(
+        fallback.rows.map((row) =>
+          hydrateCarrier({
+            ...row,
+            caller_id_required: row.caller_id_required ?? false,
+            transport: row.transport || 'udp',
+            registration_required: row.registration_required ?? false,
+            prefixes: []
+          })
+        )
+      );
+    }
+    throw err;
+  }
 };
 
 const createCarrier = async ({
@@ -102,7 +124,7 @@ const createCarrier = async ({
     [
       name,
       callerId || null,
-      callerIdRequired !== undefined ? callerIdRequired : true,
+      callerIdRequired !== undefined ? callerIdRequired : false,
       sipDomain,
       sipPort || null,
       transport || 'udp',

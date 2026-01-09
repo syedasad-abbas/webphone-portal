@@ -48,7 +48,7 @@ class CarrierController extends Controller
 
         $payload = $data;
         $payload['registrationRequired'] = $request->boolean('registrationRequired');
-        $payload['callerIdRequired'] = $request->boolean('callerIdRequired', true);
+        $payload['callerIdRequired'] = $request->boolean('callerIdRequired', false);
         $payload['registrationUsername'] = filled($data['registrationUsername'] ?? null) ? $data['registrationUsername'] : null;
         $payload['registrationPassword'] = filled($data['registrationPassword'] ?? null) ? $data['registrationPassword'] : null;
         $payload['prefix'] = filled($data['prefix'] ?? null) ? $data['prefix'] : null;

@@ -43,7 +43,6 @@ class CarrierController extends Controller
             'registrationUsername' => ['nullable', 'string'],
             'registrationPassword' => ['nullable', 'string'],
             'prefix' => ['nullable', 'string'],
-            'prefixCallerId' => ['nullable', 'string'],
         ]);
 
         $payload = $data;
@@ -51,7 +50,6 @@ class CarrierController extends Controller
         $payload['registrationUsername'] = filled($data['registrationUsername'] ?? null) ? $data['registrationUsername'] : null;
         $payload['registrationPassword'] = filled($data['registrationPassword'] ?? null) ? $data['registrationPassword'] : null;
         $payload['prefix'] = filled($data['prefix'] ?? null) ? $data['prefix'] : null;
-        $payload['prefixCallerId'] = filled($data['prefixCallerId'] ?? null) ? $data['prefixCallerId'] : null;
 
         $response = $this->backend($token)->post('/admin/carriers', $payload);
         if ($response->failed()) {
@@ -91,7 +89,6 @@ class CarrierController extends Controller
             'registrationUsername' => ['nullable', 'string'],
             'registrationPassword' => ['nullable', 'string'],
             'prefix' => ['nullable', 'string'],
-            'prefixCallerId' => ['nullable', 'string'],
         ]);
 
         $payload = $data;
@@ -99,7 +96,6 @@ class CarrierController extends Controller
         $payload['registrationUsername'] = filled($data['registrationUsername'] ?? null) ? $data['registrationUsername'] : null;
         $payload['registrationPassword'] = filled($data['registrationPassword'] ?? null) ? $data['registrationPassword'] : null;
         $payload['prefix'] = filled($data['prefix'] ?? null) ? $data['prefix'] : null;
-        $payload['prefixCallerId'] = filled($data['prefixCallerId'] ?? null) ? $data['prefixCallerId'] : null;
 
         $response = $this->backend($token)->put("/admin/carriers/{$carrierId}", $payload);
         if ($response->failed()) {

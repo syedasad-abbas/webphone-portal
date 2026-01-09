@@ -92,7 +92,7 @@
         </header>
         <form method="POST" action="{{ route('admin.carriers.store') }}" class="form-grid" id="create-carrier-form">
             @csrf
-            <label>Name <span style="color:var(--warning);">*</span>
+            <label><span class="required-badge"></span>Name*
                 <input type="text" name="name" value="{{ old('name') }}" required placeholder="Provider name">
             </label>
             <label>Default Caller ID
@@ -100,9 +100,6 @@
             </label>
             <label>Prefix (optional)
                 <input type="text" name="prefix" value="{{ old('prefix') }}" placeholder="e.g. 100">
-            </label>
-            <label>Prefix Caller ID
-                <input type="text" name="prefixCallerId" value="{{ old('prefixCallerId') }}" placeholder="Overrides default for prefix">
             </label>
             <label>Transport
                 @php($selectedTransport = old('transport', 'udp'))
@@ -112,10 +109,10 @@
                     <option value="tls" {{ $selectedTransport === 'tls' ? 'selected' : '' }}>TLS</option>
                 </select>
             </label>
-            <label>Domain / IP <span style="color:var(--warning);">*</span>
+            <label><span class="required-badge"></span>Domain / IP*
                 <input type="text" name="sipDomain" value="{{ old('sipDomain') }}" placeholder="sip.provider.com" required>
             </label>
-            <label>Port <span style="color:var(--warning);">*</span>
+            <label><span class="required-badge"></span>Port*
                 <input type="number" name="sipPort" value="{{ old('sipPort', 5062) }}" min="1" max="65535" required>
             </label>
             <label style="grid-column:1/-1; flex-direction:row; align-items:center; gap:0.6rem;">

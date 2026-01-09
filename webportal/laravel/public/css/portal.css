@@ -314,6 +314,16 @@ tbody tr:nth-child(odd) {
     overflow-x: auto;
 }
 
+.required-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.85rem;
+    color: var(--danger);
+    font-weight: 700;
+    margin-right: 0.35rem;
+}
+
 @media (max-width: 640px) {
     .hero {
         flex-direction: column;

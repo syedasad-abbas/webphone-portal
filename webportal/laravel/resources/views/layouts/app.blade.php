@@ -19,8 +19,12 @@
                 <p>{{ $title ?? 'Provision carriers, manage users, and launch calls in one place.' }}</p>
             </div>
             <div class="pill-nav">
-                <a href="{{ route('admin.login') }}">Admin</a>
-                <a href="{{ route('user.login') }}">Dialer</a>
+                <form method="GET" action="{{ route('admin.login') }}">
+                    <button type="submit">Admin</button>
+                </form>
+                <form method="GET" action="{{ route('user.login') }}">
+                    <button type="submit">Dialer</button>
+                </form>
                 @if(session()->has('admin_token'))
                     <form method="POST" action="{{ route('admin.logout') }}">
                         @csrf

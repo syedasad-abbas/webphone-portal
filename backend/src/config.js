@@ -44,6 +44,7 @@ module.exports = {
     port: process.env.FREESWITCH_PORT || 8021,
     password: process.env.FREESWITCH_PASSWORD || 'ClueCon',
     recordingsPath: process.env.FREESWITCH_RECORDINGS_PATH || '/var/recordings',
+    externalSipIp: optionalEnv(process.env.FREESWITCH_EXTERNAL_SIP_IP, null),
     profile: optionalEnv(process.env.FREESWITCH_SIP_PROFILE, 'external') || 'external',
     gatewayConfigPath: optionalEnv(process.env.FREESWITCH_GATEWAY_PATH, null)
   },

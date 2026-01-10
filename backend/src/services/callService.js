@@ -19,19 +19,7 @@ const logCall = async ({ userId, destination, callerId, status, recordingPath, c
   );
 };
 
-const selectCarrierPrefix = (prefixes, normalizedDestination) => {
-  if (!Array.isArray(prefixes) || prefixes.length === 0) {
-    return null;
-  }
-  const digits = (normalizedDestination || '').replace(/^\+/, '');
-  const matchingPrefixes = prefixes
-    .filter((entry) => entry.prefix && digits.startsWith(entry.prefix))
-    .sort((a, b) => b.prefix.length - a.prefix.length);
-  if (matchingPrefixes.length > 0) {
-    return matchingPrefixes[0];
-  }
-  return prefixes.find((entry) => entry.prefix) || null;
-};
+const selectCarrierPrefix = () => null;
 
 const applyDialPrefix = (normalizedDestination, prefixEntry) => {
   if (!prefixEntry?.prefix) {
@@ -96,12 +84,23 @@ const originate = async ({ user, destination, callerId }) => {
   }
 
   const domainPart = record.sip_port ? `${record.sip_domain}:${record.sip_port}` : record.sip_domain;
-  const endpoint = `sofia/external/${prefixedDestination}@${domainPart}`;
+  const toUser = normalizedDestination;
+  const requestUser = prefixedDestination || normalizedDestination;
+  const endpoint = `sofia/external/${requestUser}@${domainPart}`;
   const transport = (record.transport || 'udp').toLowerCase();
   const channelVars = [
     `sip_transport=${transport}`,
-    `origination_uuid=${originationUuid}`
+    `origination_uuid=${originationUuid}`,
+    `sip_req_user=${requestUser}`,
+    `sip_to_user=${toUser}`,
+    `sip_to_host=${domainPart}`
   ];
+  if (resolvedCallerId) {
+    channelVars.push(`sip_from_user=${resolvedCallerId}`);
+  }
+  if (config.freeswitch.externalSipIp) {
+    channelVars.push(`sip_from_host=${config.freeswitch.externalSipIp}`);
+  }
   if (record.registration_username) {
     channelVars.push(`sip_auth_username=${record.registration_username}`);
   }

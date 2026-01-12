@@ -1,6 +1,7 @@
 const { randomUUID } = require('crypto');
 const db = require('../db');
 const freeswitch = require('../lib/freeswitch');
+const { normalizeGatewayName } = require('../lib/carrierUtils');
 const config = require('../config');
 
 const normalizeDestination = (destination) => {
@@ -8,7 +9,28 @@ const normalizeDestination = (destination) => {
     return destination;
   }
   const digits = destination.toString().replace(/\D+/g, '');
+  const isUsNumber = digits.length === 10 || (digits.length === 11 && digits.startsWith('1'));
+  if (!isUsNumber) {
+    return null;
+  }
   return digits.startsWith('1') ? `+${digits}` : `+1${digits}`;
+};
+
+const normalizeCallerId = (callerId) => {
+  if (!callerId) {
+    return null;
+  }
+  const digits = callerId.toString().replace(/\D+/g, '');
+  if (!digits) {
+    return null;
+  }
+  if (digits.length === 10) {
+    return `+1${digits}`;
+  }
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return `+${digits}`;
+  }
+  return `+${digits}`;
 };
 
 const logCall = async ({ userId, destination, callerId, status, recordingPath, callUuid, connectedAt, endedAt }) => {
@@ -19,19 +41,28 @@ const logCall = async ({ userId, destination, callerId, status, recordingPath, c
   );
 };
 
-const selectCarrierPrefix = () => null;
+const selectCarrierPrefix = (prefixes) => {
+  if (!Array.isArray(prefixes) || prefixes.length === 0) {
+    return null;
+  }
+  return prefixes.find((entry) => entry.prefix) || null;
+};
 
 const applyDialPrefix = (normalizedDestination, prefixEntry) => {
   if (!prefixEntry?.prefix) {
     return normalizedDestination;
   }
-  const digits = (normalizedDestination || '').replace(/^\+/, '');
-  return `${prefixEntry.prefix}${digits}`;
+  const withoutPlus = (normalizedDestination || '').replace(/^\+/, '');
+  const prefixDigits = prefixEntry.prefix.toString().replace(/\D+/g, '');
+  return `${prefixDigits}${withoutPlus}`;
 };
 
 const originate = async ({ user, destination, callerId }) => {
   const originationUuid = randomUUID();
   const normalizedDestination = normalizeDestination(destination);
+  if (!normalizedDestination) {
+    throw new Error('Only US/CA destinations (+1) are allowed');
+  }
   const userResult = await db.query(
     `SELECT users.id,
             users.carrier_id,
@@ -42,6 +73,8 @@ const originate = async ({ user, destination, callerId }) => {
             carriers.sip_domain,
             carriers.sip_port,
             carriers.transport,
+            carriers.outbound_proxy,
+            carriers.registration_required,
             carriers.registration_username,
             carriers.registration_password
      FROM users
@@ -74,6 +107,7 @@ const originate = async ({ user, destination, callerId }) => {
   if (!resolvedCallerId && record.caller_id_required) {
     resolvedCallerId = fallbackCallerId;
   }
+  const callerIdUser = normalizeCallerId(resolvedCallerId);
   const recordingEnabled = record.recording_enabled;
   const recordingPath = recordingEnabled
     ? `${config.freeswitch.recordingsPath}/${user.id}-${Date.now()}.wav`
@@ -84,23 +118,45 @@ const originate = async ({ user, destination, callerId }) => {
   }
 
   const domainPart = record.sip_port ? `${record.sip_domain}:${record.sip_port}` : record.sip_domain;
-  const toUser = normalizedDestination;
-  const requestUser = prefixedDestination || normalizedDestination;
-  const endpoint = `sofia/external/${requestUser}@${domainPart}`;
+  const useGateway = Boolean(record.registration_required || record.outbound_proxy);
+  const gatewayName = useGateway ? normalizeGatewayName({ id: record.carrier_id }) : null;
+  if (useGateway && !gatewayName) {
+    throw new Error('Carrier gateway is not configured');
+  }
+  const fromHost = record.sip_domain || config.freeswitch.externalSipIp || null;
+  const toUser = useGateway ? normalizedDestination : prefixedDestination || normalizedDestination;
+  const requestUser = toUser;
+  const endpoint = useGateway ? null : `sofia/external/${requestUser}@${domainPart}`;
   const transport = (record.transport || 'udp').toLowerCase();
   const channelVars = [
     `sip_transport=${transport}`,
     `origination_uuid=${originationUuid}`,
     `sip_req_user=${requestUser}`,
-    `sip_to_user=${toUser}`,
-    `sip_to_host=${domainPart}`
+    `sip_to_user=${toUser}`
   ];
-  if (resolvedCallerId) {
-    channelVars.push(`sip_from_user=${resolvedCallerId}`);
+  if (!useGateway) {
+    channelVars.push(`sip_to_host=${domainPart}`);
   }
-  if (config.freeswitch.externalSipIp) {
-    channelVars.push(`sip_from_host=${config.freeswitch.externalSipIp}`);
+  const authFromUser = useGateway && record.registration_username
+    ? record.registration_username
+    : callerIdUser;
+  if (authFromUser) {
+    channelVars.push(`sip_from_user=${authFromUser}`);
   }
+  if (fromHost) {
+    channelVars.push(`sip_from_host=${fromHost}`);
+  }
+  if (fromHost) {
+    const identityUser = callerIdUser || authFromUser;
+    if (identityUser) {
+      const pai = `<sip:${identityUser}@${fromHost}>`;
+      channelVars.push(`sip_from_uri=sip:${identityUser}@${fromHost}`);
+      channelVars.push(`sip_h_P-Asserted-Identity=${pai}`);
+      channelVars.push(`sip_h_P-Preferred-Identity=${pai}`);
+    }
+  }
+  // Disable Remote-Party-ID to avoid carriers that reject it.
+  channelVars.push('sip_rpid_type=none');
   if (record.registration_username) {
     channelVars.push(`sip_auth_username=${record.registration_username}`);
   }
@@ -110,11 +166,22 @@ const originate = async ({ user, destination, callerId }) => {
 
   let jobUuid = null;
   try {
+    console.log('[call] originate', {
+      userId: user.id,
+      destination: normalizedDestination,
+      requestUser,
+      toUser,
+      callerId: resolvedCallerId,
+      sipHost: domainPart,
+      transport
+    });
     const originateResult = await freeswitch.originateCall({
       endpoint,
-      callerId: resolvedCallerId,
+      callerId: callerIdUser,
       recordingPath,
-      variables: channelVars
+      variables: channelVars,
+      gateway: useGateway ? gatewayName : null,
+      destination: useGateway ? toUser : null
     });
     jobUuid = originateResult.jobUuid || originationUuid;
     await logCall({
@@ -127,6 +194,16 @@ const originate = async ({ user, destination, callerId }) => {
     });
     return { status: 'queued', callUuid: originationUuid };
   } catch (err) {
+    console.error('[call] originate failed', {
+      userId: user.id,
+      destination: normalizedDestination,
+      requestUser,
+      toUser,
+      callerId: resolvedCallerId,
+      sipHost: domainPart,
+      transport,
+      error: err.message
+    });
     await logCall({
       userId: user.id,
       destination: normalizedDestination,

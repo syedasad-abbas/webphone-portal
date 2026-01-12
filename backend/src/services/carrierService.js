@@ -68,6 +68,7 @@ const listCarriers = async () => {
               c.sip_domain,
               c.sip_port,
               c.transport,
+              c.outbound_proxy,
               c.registration_required,
               c.registration_username,
               json_agg(
@@ -96,6 +97,7 @@ const listCarriers = async () => {
             ...row,
             caller_id_required: row.caller_id_required ?? false,
             transport: row.transport || 'udp',
+            outbound_proxy: row.outbound_proxy || null,
             registration_required: row.registration_required ?? false,
             prefixes: []
           })
@@ -115,12 +117,13 @@ const createCarrier = async ({
   transport,
   registrationRequired,
   registrationUsername,
-  registrationPassword
+  registrationPassword,
+  outboundProxy
 }) => {
   const result = await db.query(
-    `INSERT INTO carriers (name, default_caller_id, caller_id_required, sip_domain, sip_port, transport, registration_required, registration_username, registration_password)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-     RETURNING id, name, default_caller_id, caller_id_required, sip_domain, sip_port, transport, registration_required, registration_username, registration_password`,
+    `INSERT INTO carriers (name, default_caller_id, caller_id_required, sip_domain, sip_port, transport, outbound_proxy, registration_required, registration_username, registration_password)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+     RETURNING id, name, default_caller_id, caller_id_required, sip_domain, sip_port, transport, outbound_proxy, registration_required, registration_username, registration_password`,
     [
       name,
       callerId || null,
@@ -128,6 +131,7 @@ const createCarrier = async ({
       sipDomain,
       sipPort || null,
       transport || 'udp',
+      outboundProxy || null,
       registrationRequired || false,
       registrationUsername || null,
       registrationPassword || null
@@ -154,7 +158,8 @@ const updateCarrier = async (
     transport,
     registrationRequired,
     registrationUsername,
-    registrationPassword
+    registrationPassword,
+    outboundProxy
   }
 ) => {
   const shouldUpdateCallerId = callerId !== undefined;
@@ -162,16 +167,17 @@ const updateCarrier = async (
   const result = await db.query(
     `UPDATE carriers
      SET name = COALESCE($2, name),
-         default_caller_id = CASE WHEN $11 THEN $3 ELSE default_caller_id END,
+         default_caller_id = CASE WHEN $12 THEN $3 ELSE default_caller_id END,
          caller_id_required = COALESCE($4, caller_id_required),
          sip_domain = COALESCE($5, sip_domain),
          sip_port = COALESCE($6, sip_port),
          transport = COALESCE($7, transport),
-         registration_required = COALESCE($8, registration_required),
-         registration_username = COALESCE($9, registration_username),
-         registration_password = COALESCE(NULLIF($10, ''), registration_password)
+         outbound_proxy = COALESCE($8, outbound_proxy),
+         registration_required = COALESCE($9, registration_required),
+         registration_username = COALESCE($10, registration_username),
+         registration_password = COALESCE(NULLIF($11, ''), registration_password)
      WHERE id = $1
-     RETURNING id, name, default_caller_id, caller_id_required, sip_domain, sip_port, transport, registration_required, registration_username, registration_password`,
+     RETURNING id, name, default_caller_id, caller_id_required, sip_domain, sip_port, transport, outbound_proxy, registration_required, registration_username, registration_password`,
     [
       carrierId,
       name,
@@ -180,6 +186,7 @@ const updateCarrier = async (
       sipDomain,
       sipPort,
       transport,
+      outboundProxy,
       registrationRequired,
       registrationUsername,
       registrationPassword || null,
@@ -213,6 +220,7 @@ const getCarrierById = async (carrierId) => {
             sip_domain,
             sip_port,
             transport,
+            outbound_proxy,
             registration_required,
             registration_username
      FROM carriers

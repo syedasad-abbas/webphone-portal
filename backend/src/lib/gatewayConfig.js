@@ -32,6 +32,7 @@ const getGatewayFilePath = (gatewayName) => {
 const buildGatewayXml = (carrier, gatewayName) => {
   const endpoint = formatSipEndpoint(carrier);
   const transport = (carrier.transport || 'udp').toLowerCase();
+  const shouldRegister = Boolean(carrier.registration_required);
   const params = [
     { name: 'username', value: carrier.registration_username },
     { name: 'password', value: carrier.registration_password },
@@ -39,12 +40,13 @@ const buildGatewayXml = (carrier, gatewayName) => {
     { name: 'from-domain', value: carrier.sip_domain },
     { name: 'extension', value: carrier.registration_username },
     { name: 'proxy', value: endpoint },
-    { name: 'register-proxy', value: endpoint },
-    { name: 'register-transport', value: transport },
-    { name: 'register', value: 'true' },
-    { name: 'expire-seconds', value: '3600' },
-    { name: 'retry-seconds', value: '30' },
-    { name: 'ping', value: '30' }
+    { name: 'outbound-proxy', value: carrier.outbound_proxy },
+    { name: 'register-proxy', value: shouldRegister ? endpoint : null },
+    { name: 'register-transport', value: shouldRegister ? transport : null },
+    { name: 'register', value: shouldRegister ? 'true' : 'false' },
+    { name: 'expire-seconds', value: shouldRegister ? '3600' : null },
+    { name: 'retry-seconds', value: shouldRegister ? '30' : null },
+    { name: 'ping', value: shouldRegister ? '30' : null }
   ].filter((param) => param.value);
 
   const paramXml = params
@@ -105,15 +107,18 @@ const syncGateway = async (carrier) => {
     return;
   }
 
-  if (!carrier.registration_required) {
+  const shouldKeepGateway = Boolean(carrier.registration_required || carrier.outbound_proxy);
+  if (!shouldKeepGateway) {
     await removeGatewayFile(gatewayName);
     await killGateway(gatewayName);
     await reloadProfile();
     return;
   }
 
-  if (!carrier.registration_username || !carrier.registration_password) {
-    throw new Error('Registration credentials are required when enabling registration.');
+  if (carrier.registration_required) {
+    if (!carrier.registration_username || !carrier.registration_password) {
+      throw new Error('Registration credentials are required when enabling registration.');
+    }
   }
   if (!carrier.sip_domain) {
     throw new Error('A SIP domain or IP is required for carrier registration.');

@@ -91,7 +91,7 @@ const originateCall = async ({ destination, callerId, gateway, recordingPath, en
     if (!gateway || !destination) {
       throw new Error('Gateway and destination are required when endpoint is not provided');
     }
-    dialString = `${gateway}/${destination}`;
+    dialString = `sofia/gateway/${gateway}/${destination}`;
   }
 
   const originateString = `bgapi originate {${vars.join(',')}}${dialString} &park`;

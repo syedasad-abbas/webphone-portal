@@ -27,7 +27,7 @@
 			<param name="service-point-url" value="http://127.0.0.1:5045/osp"/>
 
 			<!-- FreeSWITCH IP address for OSP -->
-			<param name="device-ip" value="127.0.0.1:5082"/>
+			<param name="device-ip" value="127.0.0.1:5080"/>
 
 			<!-- SSL lifetime in seconds -->
 			<param name="ssl-lifetime" value="300"/>

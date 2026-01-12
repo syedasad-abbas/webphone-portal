@@ -1,0 +1,16 @@
+<include>
+  <gateway name="9a8b9f71-6ec3-4884-aec4-6694cc72ef3b">
+    <param name="username" value="jambonz_test_user"/>
+    <param name="password" value="be9f2630d5fc9bab8b25X"/>
+    <param name="from-user" value="jambonz_test_user"/>
+    <param name="from-domain" value="jambonz-test.sip.twilio.com"/>
+    <param name="extension" value="jambonz_test_user"/>
+    <param name="proxy" value="jambonz-test.sip.twilio.com:5060"/>
+    <param name="register-proxy" value="jambonz-test.sip.twilio.com:5060"/>
+    <param name="register-transport" value="tcp"/>
+    <param name="register" value="true"/>
+    <param name="expire-seconds" value="3600"/>
+    <param name="retry-seconds" value="30"/>
+    <param name="ping" value="30"/>
+  </gateway>
+</include>

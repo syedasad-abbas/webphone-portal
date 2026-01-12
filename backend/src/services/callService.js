@@ -137,9 +137,7 @@ const originate = async ({ user, destination, callerId }) => {
   if (!useGateway) {
     channelVars.push(`sip_to_host=${domainPart}`);
   }
-  const authFromUser = useGateway && record.registration_username
-    ? record.registration_username
-    : callerIdUser;
+  const authFromUser = callerIdUser || (useGateway ? record.registration_username : null);
   if (authFromUser) {
     channelVars.push(`sip_from_user=${authFromUser}`);
   }

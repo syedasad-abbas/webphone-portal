@@ -119,3 +119,46 @@ All services share the `core` Docker network for simple hostnames (`backend`, `d
 * The Laravel container currently generates its own `APP_KEY` during the image build. The compose environment variable still overrides that value, so ensure it matches your deployment needs.
 * Recording is always enabled at the data layer; integrate with FreeSWITCH record applications if you need actual media capture.
 * Because dependencies download during the Docker builds, an active internet connection is required the first time you run `docker-compose up --build`.
+
+---
+
+### Trace SIP INVITEs by Caller ID
+
+Use these commands to locate SIP INVITEs and responses in the FreeSWITCH log.
+
+1. **Find INVITEs with a specific caller ID**
+   ```bash
+   docker compose exec -T freeswitch sh -c \
+   "grep -n \"From: <sip:YOUR_CALLER_ID@\" /var/log/freeswitch/freeswitch.log | tail -n 20"
+   ```
+
+2. **Show the full INVITE block around a match**
+   Replace `LINE` with the line number from step 1:
+   ```bash
+   docker compose exec -T freeswitch sh -c \
+   "sed -n 'LINE,LINE+40p' /var/log/freeswitch/freeswitch.log"
+   ```
+
+3. **Follow a SIP Call-ID**
+   Copy the `Call-ID:` value from the INVITE and search for it:
+   ```bash
+   docker compose exec -T freeswitch sh -c \
+   "grep -n 'Call-ID: YOUR_CALL_ID' /var/log/freeswitch/freeswitch.log | tail -n 20"
+   ```
+
+4. **Quickly list recent SIP responses (400/404/503/etc.)**
+   ```bash
+   docker compose exec -T freeswitch sh -c \
+   "grep -n 'SIP/2.0 ' /var/log/freeswitch/freeswitch.log | tail -n 20"
+   ```
+
+5. **Extract a full SIP response block (e.g., 400)**
+   ```bash
+   docker compose exec -T freeswitch sh -c \
+   "grep -n 'SIP/2.0 400' /var/log/freeswitch/freeswitch.log | tail -n 5"
+   ```
+   Then print the surrounding block (replace `LINE`):
+   ```bash
+   docker compose exec -T freeswitch sh -c \
+   "sed -n 'LINE,LINE+15p' /var/log/freeswitch/freeswitch.log"
+   ```

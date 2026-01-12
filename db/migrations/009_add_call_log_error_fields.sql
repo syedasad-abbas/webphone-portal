@@ -1,0 +1,4 @@
+ALTER TABLE call_logs
+    ADD COLUMN IF NOT EXISTS sip_status INTEGER,
+    ADD COLUMN IF NOT EXISTS sip_reason TEXT,
+    ADD COLUMN IF NOT EXISTS hangup_cause TEXT;

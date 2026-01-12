@@ -60,6 +60,9 @@ CREATE TABLE IF NOT EXISTS call_logs (
     connected_at TIMESTAMPTZ,
     ended_at TIMESTAMPTZ,
     duration_seconds INTEGER,
+    sip_status INTEGER,
+    sip_reason TEXT,
+    hangup_cause TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

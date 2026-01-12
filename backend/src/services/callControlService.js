@@ -23,14 +23,51 @@ const updateCallCompletion = async (callId, durationSeconds) => {
   );
 };
 
+const updateCallDiagnostics = async (callId, diagnostics) => {
+  await db.query(
+    `UPDATE call_logs
+     SET sip_status = COALESCE($1, sip_status),
+         sip_reason = COALESCE($2, sip_reason),
+         hangup_cause = COALESCE($3, hangup_cause)
+     WHERE id = $4`,
+    [
+      diagnostics.sipStatus ?? null,
+      diagnostics.sipReason ?? null,
+      diagnostics.hangupCause ?? null,
+      callId
+    ]
+  );
+};
+
+const fetchCallDiagnostics = async (uuid) => {
+  const sipStatusRaw = await freeswitch.getChannelVar(uuid, 'sip_term_status');
+  const sipReason = await freeswitch.getChannelVar(uuid, 'sip_term_phrase');
+  const hangupCause = await freeswitch.getChannelVar(uuid, 'hangup_cause');
+  const sipStatus = sipStatusRaw && !Number.isNaN(Number(sipStatusRaw))
+    ? Number(sipStatusRaw)
+    : null;
+  return {
+    sipStatus,
+    sipReason: sipReason || null,
+    hangupCause: hangupCause || null
+  };
+};
+
 const getStatus = async ({ uuid, userId }) => {
   const call = await findCallByUuid(uuid, userId);
   const exists = await freeswitch.callExists(uuid);
+  const diagnostics = await fetchCallDiagnostics(uuid);
+  if (diagnostics.sipStatus || diagnostics.sipReason || diagnostics.hangupCause) {
+    await updateCallDiagnostics(call.id, diagnostics);
+  }
 
   if (!exists) {
     await updateCallCompletion(call.id, call.duration_seconds);
     return {
       status: call.status === 'completed' ? 'completed' : 'ended',
+      sipStatus: diagnostics.sipStatus ?? call.sip_status ?? null,
+      sipReason: diagnostics.sipReason ?? call.sip_reason ?? null,
+      hangupCause: diagnostics.hangupCause ?? call.hangup_cause ?? null,
       recordingPath: call.recording_path,
       durationSeconds: call.duration_seconds || 0
     };
@@ -48,6 +85,9 @@ const getStatus = async ({ uuid, userId }) => {
 
   return {
     status: answered ? 'in_call' : 'ringing',
+    sipStatus: diagnostics.sipStatus ?? call.sip_status ?? null,
+    sipReason: diagnostics.sipReason ?? call.sip_reason ?? null,
+    hangupCause: diagnostics.hangupCause ?? call.hangup_cause ?? null,
     recordingPath: call.recording_path,
     durationSeconds
   };

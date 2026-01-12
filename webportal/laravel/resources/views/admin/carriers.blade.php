@@ -141,7 +141,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const checkbox = document.querySelector('input[name="registrationRequired"]');
+            const checkbox = document.querySelector('input[name="registrationRequired"][type="checkbox"]');
             const regFields = document.getElementById('registration-fields');
             if (!checkbox || !regFields) {
                 return;

@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: core-config
+  namespace: default
+data:
+  # -------------------------
+  # App env (non-sensitive)
+  # -------------------------
+  NODE_ENV: "production"
+  BACKEND_PORT: "4000"
+
+  DB_HOST: "127.0.0.1"
+  DB_PORT: "5432"
+  DB_USER: "your_user"
+  DB_NAME: "your_db"
+
+  DEFAULT_GROUP_NAME: "default_group"
+  DEFAULT_GROUP_PERMISSIONS: "default_permissions"
+  DEFAULT_CARRIER_NAME: "default_carrier"
+  DEFAULT_CARRIER_CALLER_ID: "default_caller_id"
+  DEFAULT_CARRIER_DOMAIN: "sip.example.com"
+  DEFAULT_CARRIER_PORT: "5060"
+  DEFAULT_CARRIER_TRANSPORT: "udp"
+
+  FREESWITCH_EVENT_SOCKET_HOST: "127.0.0.1"
+  FREESWITCH_EVENT_SOCKET_PORT: "8021"
+  FREESWITCH_RECORDINGS_PATH: "/var/recordings"
+  FREESWITCH_GATEWAY_PATH: "/var/lib/freeswitch/gateways"
+  FREESWITCH_SIP_PROFILE: "external"
+
+  WEB_PORTAL_URL: "https://your-domain.com"
+  APP_ENV: "production"
+  APP_DEBUG: "false"
+  LOG_CHANNEL: "stack"
+  WEB_PORTAL_SESSION_DRIVER: "file"
+  BACKEND_BASE_URL: "http://127.0.0.1:4000"
+
+  # -------------------------
+  # Nginx conf (from compose)
+  # -------------------------
+  nginx.conf: |
+    server {
+      listen 80;
+      server_name _;
+
+      root /var/www/html/public;
+      index index.php index.html;
+
+      location / {
+        try_files $uri $uri/ /index.php?$query_string;
+      }
+
+      location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass 127.0.0.1:9000;
+      }
+    }
+
+  # -------------------------
+  # Postgres init.sql
+  # -------------------------
+  init.sql: |
+    -- paste your ./db/init.sql here
+    -- example:
+    -- CREATE TABLE test(id serial primary key);

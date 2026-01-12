@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: core-service
+  namespace: default
+spec:
+  selector:
+    app: core-all
+  type: ClusterIP
+  ports:
+    - name: web
+      port: 80
+      targetPort: 80
+    - name: backend
+      port: 4000
+      targetPort: 4000
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+    - name: freeswitch-esl
+      port: 8021
+      targetPort: 8021

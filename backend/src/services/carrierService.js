@@ -205,6 +205,12 @@ const updateCarrier = async (
 
 const deleteCarrier = async (carrierId) => {
   const existing = await db.query('SELECT id, name FROM carriers WHERE id = $1', [carrierId]);
+  const usage = await db.query('SELECT COUNT(*)::int AS total FROM users WHERE carrier_id = $1', [carrierId]);
+  if ((usage.rows[0]?.total || 0) > 0) {
+    const err = new Error('Carrier is assigned to one or more users. Reassign users before deleting.');
+    err.code = 'CARRIER_IN_USE';
+    throw err;
+  }
   await db.query('DELETE FROM carriers WHERE id = $1', [carrierId]);
   if (existing.rowCount > 0) {
     await removeGateway(existing.rows[0]);

@@ -1,0 +1,293 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core-all-in-one
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: core-all
+  template:
+    metadata:
+      labels:
+        app: core-all
+    spec:
+      volumes:
+        - name: db-data
+          emptyDir: {}          # dev-only (data lost on restart)
+        - name: db-init
+          configMap:
+            name: core-config
+            items:
+              - key: init.sql
+                path: init.sql
+
+        - name: recordings
+          emptyDir: {}          # dev-only
+        - name: nginx-conf
+          configMap:
+            name: core-config
+            items:
+              - key: nginx.conf
+                path: default.conf
+        - name: app-code
+          emptyDir: {}          # shared between php-fpm and nginx
+
+      initContainers:
+        # Copy laravel code from webportal image into shared volume (like compose bind mount)
+        - name: init-copy-webportal
+          image: YOUR_REGISTRY/your-webportal:tag
+          command: ["sh", "-c"]
+          args:
+            - cp -R /var/www/html/. /shared/
+          volumeMounts:
+            - name: app-code
+              mountPath: /shared
+
+      containers:
+        # -------------------------
+        # Postgres
+        # -------------------------
+        - name: db
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: DB_USER
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: DB_NAME
+            # NOTE: password should be a Secret in real setups
+            - name: POSTGRES_PASSWORD
+              value: "CHANGE_ME"
+          volumeMounts:
+            - name: db-data
+              mountPath: /var/lib/postgresql/data
+            - name: db-init
+              mountPath: /docker-entrypoint-initdb.d/init.sql
+              subPath: init.sql
+              readOnly: true
+
+        # -------------------------
+        # FreeSWITCH
+        # -------------------------
+        - name: freeswitch
+          image: YOUR_REGISTRY/your-freeswitch:tag
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["NET_ADMIN", "NET_RAW"]
+          ports:
+            - containerPort: 8021
+              name: esl
+          env:
+            - name: FREESWITCH_EVENT_SOCKET_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: FREESWITCH_EVENT_SOCKET_HOST
+            - name: FREESWITCH_EVENT_SOCKET_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: FREESWITCH_EVENT_SOCKET_PORT
+            - name: FREESWITCH_EVENT_SOCKET_PASS
+              value: "CHANGE_ME"
+            - name: FREESWITCH_RECORDINGS_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: FREESWITCH_RECORDINGS_PATH
+            - name: FREESWITCH_GATEWAY_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: FREESWITCH_GATEWAY_PATH
+            - name: FREESWITCH_SIP_PROFILE
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: FREESWITCH_SIP_PROFILE
+          volumeMounts:
+            - name: recordings
+              mountPath: /var/recordings
+
+        # -------------------------
+        # Backend
+        # -------------------------
+        - name: backend
+          image: YOUR_REGISTRY/your-backend:tag
+          ports:
+            - containerPort: 4000
+              name: backend-http
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: NODE_ENV
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: BACKEND_PORT
+
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: DB_PORT
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: DB_USER
+            - name: DB_PASSWORD
+              value: "CHANGE_ME"   # should be Secret
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: DB_NAME
+
+            - name: JWT_SECRET
+              value: "CHANGE_ME"   # should be Secret
+            - name: DEFAULT_ADMIN_EMAIL
+              value: "admin@example.com"
+            - name: DEFAULT_ADMIN_PASSWORD
+              value: "CHANGE_ME"
+
+            - name: DEFAULT_GROUP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: DEFAULT_GROUP_NAME
+            - name: DEFAULT_GROUP_PERMISSIONS
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: DEFAULT_GROUP_PERMISSIONS
+            - name: DEFAULT_CARRIER_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: DEFAULT_CARRIER_NAME
+            - name: DEFAULT_CARRIER_CALLER_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: DEFAULT_CARRIER_CALLER_ID
+            - name: DEFAULT_CARRIER_DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: DEFAULT_CARRIER_DOMAIN
+            - name: DEFAULT_CARRIER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: DEFAULT_CARRIER_PORT
+            - name: DEFAULT_CARRIER_TRANSPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: DEFAULT_CARRIER_TRANSPORT
+
+            - name: FREESWITCH_HOST
+              value: "127.0.0.1"
+            - name: FREESWITCH_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: FREESWITCH_EVENT_SOCKET_PORT
+            - name: FREESWITCH_PASSWORD
+              value: "CHANGE_ME"
+            - name: FREESWITCH_RECORDINGS_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: FREESWITCH_RECORDINGS_PATH
+            - name: FREESWITCH_GATEWAY_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: FREESWITCH_GATEWAY_PATH
+            - name: FREESWITCH_SIP_PROFILE
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: FREESWITCH_SIP_PROFILE
+
+        # -------------------------
+        # Webportal (PHP-FPM)
+        # -------------------------
+        - name: webportal
+          image: YOUR_REGISTRY/your-webportal:tag
+          ports:
+            - containerPort: 9000
+              name: php-fpm
+          env:
+            - name: APP_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: WEB_PORTAL_URL
+            - name: APP_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: APP_ENV
+            - name: APP_KEY
+              value: "base64:CHANGE_ME" # should be Secret
+            - name: APP_DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: APP_DEBUG
+            - name: LOG_CHANNEL
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: LOG_CHANNEL
+            - name: SESSION_DRIVER
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: WEB_PORTAL_SESSION_DRIVER
+            - name: BACKEND_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: core-config
+                  key: BACKEND_BASE_URL
+          volumeMounts:
+            - name: app-code
+              mountPath: /var/www/html
+
+        # -------------------------
+        # Nginx
+        # -------------------------
+        - name: nginx
+          image: nginx:1.25-alpine
+          ports:
+            - containerPort: 80
+              name: http
+          volumeMounts:
+            - name: app-code
+              mountPath: /var/www/html
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+              readOnly: true

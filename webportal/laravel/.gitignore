@@ -43,6 +43,8 @@ resources/views/admin/*
 !resources/views/admin/dashboard.blade.php
 !resources/views/admin/create-user.blade.php
 !resources/views/admin/carriers.blade.php
+!resources/views/admin/edit-user.blade.php
+!resources/views/admin/edit-carrier.blade.php
 !resources/views/dialer/
 resources/views/dialer/*
 !resources/views/dialer/index.blade.php

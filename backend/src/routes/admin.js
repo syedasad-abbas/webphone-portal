@@ -216,8 +216,15 @@ router.put('/carriers/:carrierId', authenticate('admin'), async (req, res) => {
 });
 
 router.delete('/carriers/:carrierId', authenticate('admin'), async (req, res) => {
-  await carrierService.deleteCarrier(req.params.carrierId);
-  return res.status(204).send();
+  try {
+    await carrierService.deleteCarrier(req.params.carrierId);
+    return res.status(204).send();
+  } catch (err) {
+    if (err && err.code === 'CARRIER_IN_USE') {
+      return res.status(409).json({ message: err.message });
+    }
+    return res.status(400).json({ message: err.message || 'Unable to delete carrier.' });
+  }
 });
 
 router.post('/carriers/:carrierId/prefixes', authenticate('admin'), async (req, res) => {

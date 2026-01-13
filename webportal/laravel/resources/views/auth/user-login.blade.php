@@ -14,7 +14,8 @@
             <label>Password
                 <input type="password" name="password" required placeholder="••••••••">
             </label>
-            <div style="grid-column: 1 / -1; display:flex; justify-content:flex-end;">
+            <div style="grid-column: 1 / -1; display:flex; justify-content:space-between; gap:1rem;">
+                <a href="{{ route('password.forgot') }}" class="btn btn-ghost" style="text-decoration:none;">Forgot password?</a>
                 <button type="submit" class="btn btn-primary">Enter dialer</button>
             </div>
         </form>

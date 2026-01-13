@@ -21,5 +21,6 @@ return [
 
     'backend' => [
         'url' => env('BACKEND_BASE_URL', 'http://backend:4000'),
+        'internal_token' => env('PASSWORD_RESET_INTERNAL_TOKEN'),
     ],
 ];

@@ -58,5 +58,10 @@ module.exports = {
     carrierDomain: optionalEnv(process.env.DEFAULT_CARRIER_DOMAIN, '127.0.0.1'),
     carrierPort: toInt(process.env.DEFAULT_CARRIER_PORT, 5062),
     carrierTransport: sanitizeTransport(process.env.DEFAULT_CARRIER_TRANSPORT, 'udp')
+  },
+  passwordReset: {
+    otpTtlMinutes: toInt(process.env.PASSWORD_RESET_OTP_TTL_MINUTES, 10),
+    maxAttempts: toInt(process.env.PASSWORD_RESET_OTP_MAX_ATTEMPTS, 5),
+    internalToken: optionalEnv(process.env.PASSWORD_RESET_INTERNAL_TOKEN, null)
   }
 };

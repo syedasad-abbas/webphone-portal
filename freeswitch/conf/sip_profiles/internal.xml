@@ -15,6 +15,7 @@
   </aliases>
   <!-- Outbound Registrations -->
   <gateways>
+    <X-PRE-PROCESS cmd="include" data="internal/*.xml"/>
   </gateways>
 
   <domains>

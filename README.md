@@ -83,6 +83,8 @@ All services share the `core` Docker network for simple hostnames (`backend`, `d
    * `BACKEND_DEFAULT_*` values (admin email/password, default group, carrier caller ID/domain/port/transport).
    * `BACKEND_BASE_URL` / `WEB_PORTAL_URL` when deploying remotely.
    * `APP_KEY` – run `php -r "echo base64_encode(random_bytes(32));"` and prefix it with `base64:` or let Laravel generate one later and paste it here.
+   * `PASSWORD_RESET_INTERNAL_TOKEN` (same value for backend and webportal) plus `PASSWORD_RESET_OTP_TTL_MINUTES` / `PASSWORD_RESET_OTP_MAX_ATTEMPTS` if you want to override OTP defaults.
+   * `MAIL_MAILER` / `MAIL_HOST` / `MAIL_USERNAME` / `MAIL_PASSWORD` / `MAIL_FROM_ADDRESS` so the portal can email OTP codes.
    * `FREESWITCH_RECORDINGS_PATH` if you want recordings stored somewhere else inside the FreeSWITCH container (ensure the docker-compose bind mount matches).
    * `FREESWITCH_GATEWAY_PATH` (defaults to `/var/lib/freeswitch/gateways`) so the backend knows where to write gateway XML files, and `FREESWITCH_SIP_PROFILE` if you use a different profile name than `external`.
 

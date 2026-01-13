@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\UserAuthController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CarrierController;
@@ -14,9 +15,17 @@ Route::get('/', function () {
 
 Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
 Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
+Route::get('/admin/forgot-password', [PasswordResetController::class, 'showAdminForgot'])->name('admin.password.forgot');
+Route::post('/admin/forgot-password', [PasswordResetController::class, 'sendAdminOtp'])->name('admin.password.send');
+Route::get('/admin/reset-password', [PasswordResetController::class, 'showAdminReset'])->name('admin.password.reset');
+Route::post('/admin/reset-password', [PasswordResetController::class, 'resetAdminPassword'])->name('admin.password.update');
 
 Route::get('/login', [UserAuthController::class, 'showLogin'])->name('user.login');
 Route::post('/login', [UserAuthController::class, 'login'])->name('user.login.submit');
+Route::get('/forgot-password', [PasswordResetController::class, 'showUserForgot'])->name('password.forgot');
+Route::post('/forgot-password', [PasswordResetController::class, 'sendUserOtp'])->name('password.send');
+Route::get('/reset-password', [PasswordResetController::class, 'showUserReset'])->name('password.reset');
+Route::post('/reset-password', [PasswordResetController::class, 'resetUserPassword'])->name('password.update');
 
 Route::middleware('admin.auth')->group(function () {
     Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');

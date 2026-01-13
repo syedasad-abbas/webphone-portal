@@ -110,9 +110,9 @@ const originate = async ({ user, destination, callerId }) => {
   const selectedPrefix = selectCarrierPrefix(prefixEntries, normalizedDestination);
   const prefixedDestination = applyDialPrefix(normalizedDestination, selectedPrefix);
   const prefixCallerId = selectedPrefix?.caller_id || null;
-  let resolvedCallerId = callerId || prefixCallerId || record.default_caller_id || null;
+  let resolvedCallerId = callerId || prefixCallerId || null;
   if (!resolvedCallerId && record.caller_id_required) {
-    resolvedCallerId = fallbackCallerId;
+    resolvedCallerId = record.default_caller_id || fallbackCallerId;
   }
   const callerIdUser = normalizeCallerId(resolvedCallerId);
   const callerIdSipUser = stripPlus(callerIdUser);
@@ -156,21 +156,17 @@ const originate = async ({ user, destination, callerId }) => {
   if (!useGateway) {
     channelVars.push(`sip_to_host=${domainPart}`);
   }
-  const authFromUser = callerIdSipUser || (useGateway ? record.registration_username : null);
-  if (authFromUser) {
-    channelVars.push(`sip_from_user=${authFromUser}`);
-  }
-  if (fromHostBase) {
-    channelVars.push(`sip_from_host=${fromHostBase}`);
-  }
-  if (useGateway && record.sip_port) {
-    channelVars.push(`sip_from_port=${record.sip_port}`);
-  }
-  if (fromHostWithPort) {
-    const identityUser = callerIdSipUser || authFromUser;
-    if (identityUser) {
-      const pai = `<sip:${identityUser}@${fromHostWithPort}>`;
-      channelVars.push(`sip_from_uri=sip:${identityUser}@${fromHostWithPort}`);
+  if (callerIdSipUser) {
+    channelVars.push(`sip_from_user=${callerIdSipUser}`);
+    if (fromHostBase) {
+      channelVars.push(`sip_from_host=${fromHostBase}`);
+    }
+    if (useGateway && record.sip_port) {
+      channelVars.push(`sip_from_port=${record.sip_port}`);
+    }
+    if (fromHostWithPort) {
+      const pai = `<sip:${callerIdSipUser}@${fromHostWithPort}>`;
+      channelVars.push(`sip_from_uri=sip:${callerIdSipUser}@${fromHostWithPort}`);
       channelVars.push(`sip_h_P-Asserted-Identity=${pai}`);
       channelVars.push(`sip_h_P-Preferred-Identity=${pai}`);
     }

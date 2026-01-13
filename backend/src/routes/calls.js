@@ -18,13 +18,10 @@ router.post('/', authenticate('user'), async (req, res) => {
   }
 
   try {
-    const normalizedCallerId = value.callerId && value.callerId.trim().length > 0
-      ? value.callerId
-      : null;
     const response = await callService.originate({
       user: req.user,
       destination: value.destination,
-      callerId: normalizedCallerId
+      callerId: value.callerId
     });
 
     return res.json({

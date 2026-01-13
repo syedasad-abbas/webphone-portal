@@ -42,11 +42,6 @@
                             @if(!empty($carrier['sip_port']))
                                 :{{ $carrier['sip_port'] }}
                             @endif
-                            @if(!empty($carrier['outbound_proxy']))
-                                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.35rem;">
-                                    Gateway: {{ $carrier['outbound_proxy'] }}
-                                </div>
-                            @endif
                         </td>
                         <td>{{ strtoupper($carrier['transport'] ?? 'udp') }}</td>
                         <td>
@@ -125,9 +120,6 @@
             </label>
             <label><span class="required-badge"></span>Port*
                 <input type="number" name="sipPort" value="{{ old('sipPort', 5062) }}" min="1" max="65535" required>
-            </label>
-            <label>Gateway (Outbound Proxy)
-                <input type="text" name="outboundProxy" value="{{ old('outboundProxy') }}" placeholder="Optional gateway IP">
             </label>
             <label style="grid-column:1/-1; flex-direction:row; align-items:center; gap:0.6rem;">
                 <input type="checkbox" name="registrationRequired" value="1" {{ old('registrationRequired') ? 'checked' : '' }}>

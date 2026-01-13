@@ -87,16 +87,6 @@ services:
     networks:
       - core
 
-  firewall:
-    build:
-      context: ./firewall
-    restart: unless-stopped
-    network_mode: host
-    privileged: true
-    environment:
-      ALLOWED_SIP_IPS: ${ALLOWED_SIP_IPS}
-      SIP_PORTS: ${SIP_PORTS:-5060}
-
   freeswitch:
     build:
       context: ./freeswitch

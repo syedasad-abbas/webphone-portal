@@ -40,12 +40,16 @@ const updateCallDiagnostics = async (callId, diagnostics) => {
 };
 
 const fetchCallDiagnostics = async (uuid) => {
-  const sipStatusRaw = await freeswitch.getChannelVar(uuid, 'sip_term_status');
+  const sipStatusCandidates = await Promise.all([
+    freeswitch.getChannelVar(uuid, 'sip_last_status'),
+    freeswitch.getChannelVar(uuid, 'sip_call_status'),
+    freeswitch.getChannelVar(uuid, 'sip_term_status')
+  ]);
   const sipReason = await freeswitch.getChannelVar(uuid, 'sip_term_phrase');
   const hangupCause = await freeswitch.getChannelVar(uuid, 'hangup_cause');
-  const sipStatus = sipStatusRaw && !Number.isNaN(Number(sipStatusRaw))
-    ? Number(sipStatusRaw)
-    : null;
+  const sipStatus = sipStatusCandidates
+    .map((value) => (value && !Number.isNaN(Number(value)) ? Number(value) : null))
+    .find((value) => value !== null) ?? null;
   return {
     sipStatus,
     sipReason: sipReason || null,
@@ -83,8 +87,9 @@ const getStatus = async ({ uuid, userId }) => {
     await db.query('UPDATE call_logs SET connected_at = NOW() WHERE id = $1', [call.id]);
   }
 
+  const isRinging = diagnostics.sipStatus === 180 || diagnostics.sipStatus === 183;
   return {
-    status: answered ? 'in_call' : 'ringing',
+    status: answered ? 'in_call' : isRinging ? 'ringing' : 'queued',
     sipStatus: diagnostics.sipStatus ?? call.sip_status ?? null,
     sipReason: diagnostics.sipReason ?? call.sip_reason ?? null,
     hangupCause: diagnostics.hangupCause ?? call.hangup_cause ?? null,

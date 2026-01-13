@@ -110,9 +110,9 @@ const originate = async ({ user, destination, callerId }) => {
   const selectedPrefix = selectCarrierPrefix(prefixEntries, normalizedDestination);
   const prefixedDestination = applyDialPrefix(normalizedDestination, selectedPrefix);
   const prefixCallerId = selectedPrefix?.caller_id || null;
-  let resolvedCallerId = callerId || prefixCallerId || record.default_caller_id || null;
+  let resolvedCallerId = callerId || prefixCallerId || null;
   if (!resolvedCallerId && record.caller_id_required) {
-    resolvedCallerId = fallbackCallerId;
+    resolvedCallerId = record.default_caller_id || fallbackCallerId;
   }
   const callerIdUser = normalizeCallerId(resolvedCallerId);
   const callerIdSipUser = stripPlus(callerIdUser);
@@ -125,6 +125,7 @@ const originate = async ({ user, destination, callerId }) => {
     throw new Error('Carrier domain is not configured');
   }
 
+  const sipPort = record.sip_port || 5060;
   const domainPart = record.sip_port ? `${record.sip_domain}:${record.sip_port}` : record.sip_domain;
   const useGateway = Boolean(record.registration_required || record.outbound_proxy);
   const gatewayName = useGateway ? normalizeGatewayName({ id: record.carrier_id }) : null;
@@ -134,8 +135,8 @@ const originate = async ({ user, destination, callerId }) => {
   const fromHostBase = useGateway
     ? config.freeswitch.externalSipIp || record.sip_domain || null
     : record.sip_domain || config.freeswitch.externalSipIp || null;
-  const fromHostWithPort = fromHostBase && record.sip_port && useGateway
-    ? `${fromHostBase}:${record.sip_port}`
+  const fromHostWithPort = fromHostBase && useGateway
+    ? `${fromHostBase}:${sipPort}`
     : fromHostBase;
   const toUser = useGateway ? (prefixedDestination || normalizedDestination) : prefixedDestination || normalizedDestination;
   const requestUser = toUser;
@@ -149,28 +150,22 @@ const originate = async ({ user, destination, callerId }) => {
   ];
   if (useGateway && record.sip_domain) {
     channelVars.push(`sip_req_host=${record.sip_domain}`);
-    if (record.sip_port) {
-      channelVars.push(`sip_req_port=${record.sip_port}`);
-    }
+    channelVars.push(`sip_req_port=${sipPort}`);
   }
   if (!useGateway) {
     channelVars.push(`sip_to_host=${domainPart}`);
   }
-  const authFromUser = callerIdSipUser || (useGateway ? record.registration_username : null);
-  if (authFromUser) {
-    channelVars.push(`sip_from_user=${authFromUser}`);
-  }
-  if (fromHostBase) {
-    channelVars.push(`sip_from_host=${fromHostBase}`);
-  }
-  if (useGateway && record.sip_port) {
-    channelVars.push(`sip_from_port=${record.sip_port}`);
-  }
-  if (fromHostWithPort) {
-    const identityUser = callerIdSipUser || authFromUser;
-    if (identityUser) {
-      const pai = `<sip:${identityUser}@${fromHostWithPort}>`;
-      channelVars.push(`sip_from_uri=sip:${identityUser}@${fromHostWithPort}`);
+  if (callerIdSipUser) {
+    channelVars.push(`sip_from_user=${callerIdSipUser}`);
+    if (fromHostBase) {
+      channelVars.push(`sip_from_host=${fromHostBase}`);
+    }
+    if (useGateway) {
+      channelVars.push(`sip_from_port=${sipPort}`);
+    }
+    if (fromHostWithPort) {
+      const pai = `<sip:${callerIdSipUser}@${fromHostWithPort}>`;
+      channelVars.push(`sip_from_uri=sip:${callerIdSipUser}@${fromHostWithPort}`);
       channelVars.push(`sip_h_P-Asserted-Identity=${pai}`);
       channelVars.push(`sip_h_P-Preferred-Identity=${pai}`);
     }

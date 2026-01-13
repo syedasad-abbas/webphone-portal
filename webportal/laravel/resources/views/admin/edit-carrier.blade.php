@@ -38,6 +38,9 @@
             <label><span class="required-badge"></span>Port*
                 <input type="number" name="sipPort" value="{{ old('sipPort', $carrier['sip_port'] ?? 5062) }}" min="1" max="65535" required>
             </label>
+            <label>Gateway (Outbound Proxy)
+                <input type="text" name="outboundProxy" value="{{ old('outboundProxy', $carrier['outbound_proxy'] ?? '') }}" placeholder="Optional gateway IP">
+            </label>
             @php($registrationRequired = old('registrationRequired', $carrier['registration_required'] ?? false))
             <label style="grid-column:1/-1; flex-direction:row; align-items:center; gap:0.6rem;">
                 <input type="hidden" name="registrationRequired" value="0">

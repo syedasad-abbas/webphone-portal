@@ -26,6 +26,9 @@ class DialerController extends Controller
             'destination' => ['required', 'string'],
             'callerId' => ['nullable', 'string'],
         ]);
+        if (array_key_exists('callerId', $data) && trim((string) $data['callerId']) === '') {
+            unset($data['callerId']);
+        }
 
         try {
             $response = Http::withToken($request->session()->get('user_token'))

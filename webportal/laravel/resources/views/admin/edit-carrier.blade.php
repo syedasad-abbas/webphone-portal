@@ -32,6 +32,13 @@
                     <option value="tls" {{ $selectedTransport === 'tls' ? 'selected' : '' }}>TLS</option>
                 </select>
             </label>
+            <label>Outbound Proxy (optional)
+                <input type="text"
+                    name="outboundProxy"
+                    value="{{ old('outboundProxy', $carrier['outbound_proxy'] ?? '') }}"
+                    placeholder="sip:169.197.85.204:5060">
+            </label>
+
             <label><span class="required-badge"></span>Domain / IP*
                 <input type="text" name="sipDomain" value="{{ old('sipDomain', $carrier['sip_domain'] ?? '') }}" required>
             </label>

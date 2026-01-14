@@ -44,6 +44,7 @@ class CarrierController extends Controller
             'registrationUsername' => ['nullable', 'string'],
             'registrationPassword' => ['nullable', 'string'],
             'prefix' => ['nullable', 'string'],
+            'outboundProxy' => ['nullable', 'string'],
         ]);
 
         $payload = $data;
@@ -52,6 +53,7 @@ class CarrierController extends Controller
         $payload['registrationUsername'] = filled($data['registrationUsername'] ?? null) ? $data['registrationUsername'] : null;
         $payload['registrationPassword'] = filled($data['registrationPassword'] ?? null) ? $data['registrationPassword'] : null;
         $payload['prefix'] = filled($data['prefix'] ?? null) ? $data['prefix'] : null;
+        $payload['outboundProxy'] = filled($data['outboundProxy'] ?? null) ? $data['outboundProxy'] : null;
 
         $response = $this->backend($token)->post('/admin/carriers', $payload);
         if ($response->failed()) {
@@ -92,6 +94,7 @@ class CarrierController extends Controller
             'registrationUsername' => ['nullable', 'string'],
             'registrationPassword' => ['nullable', 'string'],
             'prefix' => ['nullable', 'string'],
+            'outboundProxy' => ['nullable', 'string'], // ✅ ADD
         ]);
 
         $payload = $data;
@@ -100,6 +103,7 @@ class CarrierController extends Controller
         $payload['registrationUsername'] = filled($data['registrationUsername'] ?? null) ? $data['registrationUsername'] : null;
         $payload['registrationPassword'] = filled($data['registrationPassword'] ?? null) ? $data['registrationPassword'] : null;
         $payload['prefix'] = filled($data['prefix'] ?? null) ? $data['prefix'] : null;
+        $payload['outboundProxy'] = filled($data['outboundProxy'] ?? null) ? $data['outboundProxy'] : null;
 
         $response = $this->backend($token)->put("/admin/carriers/{$carrierId}", $payload);
         if ($response->failed()) {

@@ -17,6 +17,7 @@
                     <th>Default Caller ID</th>
                     <th>Domain / Port</th>
                     <th>Transport</th>
+                    <th>Outbound Proxy</th>
                     <th>Registration</th>
                     <th>Prefixes</th>
                     <th style="text-align:right;">Actions</th>
@@ -45,6 +46,13 @@
                         </td>
                         <td>{{ strtoupper($carrier['transport'] ?? 'udp') }}</td>
                         <td>
+                        @if(!empty($carrier['outbound_proxy']))
+                            <span class="badge">{{ $carrier['outbound_proxy'] }}</span>
+                        @else
+                            <span class="badge">—</span>
+                        @endif
+                    </td>
+                        <td>
                             <span class="{{ $statusClass }}">{{ $statusLabel }}</span>
                             @if(!empty($status['detail']))
                                 <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.35rem;">
@@ -57,6 +65,7 @@
                                 </div>
                             @endif
                         </td>
+
                         <td>
                             @if(!empty($carrier['prefixes']))
                                 <div style="display:flex; flex-direction:column; gap:0.35rem;">
@@ -115,6 +124,13 @@
                     <option value="tls" {{ $selectedTransport === 'tls' ? 'selected' : '' }}>TLS</option>
                 </select>
             </label>
+            <label>Outbound Proxy (optional)
+            <input type="text"
+                name="outboundProxy"
+                value="{{ old('outboundProxy') }}"
+                placeholder="sip:169.197.85.204:5060">
+        </label>
+
             <label><span class="required-badge"></span>Domain / IP*
                 <input type="text" name="sipDomain" value="{{ old('sipDomain') }}" placeholder="sip.provider.com" required>
             </label>

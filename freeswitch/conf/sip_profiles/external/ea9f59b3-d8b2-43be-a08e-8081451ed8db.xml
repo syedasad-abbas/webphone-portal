@@ -1,0 +1,8 @@
+<include>
+  <gateway name="ea9f59b3-d8b2-43be-a08e-8081451ed8db">
+    <param name="from-domain" value="abc.com"/>
+    <param name="proxy" value="abc.com:5060"/>
+    <param name="outbound-proxy" value="192.168.1.27"/>
+    <param name="register" value="false"/>
+  </gateway>
+</include>

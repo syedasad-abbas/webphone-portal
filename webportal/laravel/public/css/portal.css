@@ -153,68 +153,6 @@ textarea:focus {
     gap: 1.25rem;
 }
 
-.dialpad {
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-}
-
-.dialpad-display input {
-    width: 100%;
-    font-size: 1.3rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-align: center;
-    background: #eff6ff;
-}
-
-.dialpad-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.75rem;
-}
-
-.dialpad-key {
-    border: 1px solid rgba(14, 135, 215, 0.25);
-    border-radius: 16px;
-    padding: 0.75rem 0.5rem;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text);
-    background: #f7fbff;
-    box-shadow: 0 10px 20px rgba(16, 37, 66, 0.08);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.15rem;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.dialpad-key span {
-    font-size: 0.65rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    color: var(--text-muted);
-}
-
-.dialpad-key:hover {
-    transform: translateY(-2px);
-    background: #eef6ff;
-    box-shadow: 0 12px 25px rgba(16, 37, 66, 0.12);
-}
-
-.dialpad-key--secondary {
-    font-size: 1.4rem;
-}
-
-.dialpad-actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.75rem;
-}
-
 .btn {
     border: none;
     border-radius: 14px;
@@ -222,11 +160,14 @@ textarea:focus {
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.45rem;
+    text-decoration: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .btn-primary {
@@ -238,15 +179,31 @@ textarea:focus {
 .btn-ghost {
     background: rgba(24, 164, 255, 0.08);
     color: var(--accent-strong);
+    border: 1px solid rgba(14, 135, 215, 0.18);
 }
 
 .btn-danger {
     background: linear-gradient(120deg, #ff7b7b, #ff4d5a);
     color: #fff;
+    box-shadow: 0 12px 25px rgba(255, 95, 109, 0.25);
 }
 
 .btn:hover {
     transform: translateY(-2px);
+    filter: brightness(1.02);
+}
+
+.btn:active {
+    transform: translateY(0);
+    filter: brightness(0.98);
+}
+
+.btn:disabled,
+.btn[disabled] {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+    box-shadow: none;
 }
 
 table {
@@ -266,6 +223,7 @@ th,
 td {
     padding: 0.85rem;
     border-bottom: 1px solid var(--card-border);
+    vertical-align: top;
 }
 
 tbody tr:nth-child(odd) {
@@ -399,4 +357,69 @@ tbody tr:nth-child(odd) {
         display: block;
         overflow-x: auto;
     }
+}
+
+/* ------------------------
+   Dialpad styles
+------------------------- */
+.dialpad {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.dialpad-display input {
+    width: 100%;
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-align: center;
+    background: #eff6ff;
+}
+
+.dialpad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.dialpad-key {
+    border: 1px solid rgba(14, 135, 215, 0.25);
+    border-radius: 16px;
+    padding: 0.75rem 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    background: #f7fbff;
+    box-shadow: 0 10px 20px rgba(16, 37, 66, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.dialpad-key span {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+}
+
+.dialpad-key:hover {
+    transform: translateY(-2px);
+    background: #eef6ff;
+    box-shadow: 0 12px 25px rgba(16, 37, 66, 0.12);
+}
+
+.dialpad-key--secondary {
+    font-size: 1.4rem;
+}
+
+.dialpad-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
 }

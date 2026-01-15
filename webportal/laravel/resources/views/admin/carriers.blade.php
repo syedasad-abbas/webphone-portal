@@ -45,13 +45,7 @@
                             @endif
                         </td>
                         <td>{{ strtoupper($carrier['transport'] ?? 'udp') }}</td>
-                        <td>
-                        @if(!empty($carrier['outbound_proxy']))
-                            <span class="badge">{{ $carrier['outbound_proxy'] }}</span>
-                        @else
-                            <span class="badge">—</span>
-                        @endif
-                    </td>
+                        <td>{{ $carrier['outbound_proxy'] ?? '—' }}</td>
                         <td>
                             <span class="{{ $statusClass }}">{{ $statusLabel }}</span>
                             @if(!empty($status['detail']))
@@ -65,7 +59,6 @@
                                 </div>
                             @endif
                         </td>
-
                         <td>
                             @if(!empty($carrier['prefixes']))
                                 <div style="display:flex; flex-direction:column; gap:0.35rem;">
@@ -107,7 +100,7 @@
             <label>Default Caller ID
                 <input type="text" name="callerId" value="{{ old('callerId') }}" placeholder="Optional caller ID">
             </label>
-            @php($requiresCallerId = old('callerIdRequired', '0'))
+            @php($requiresCallerId = old('callerIdRequired', '1'))
             <label style="grid-column:1/-1; flex-direction:row; align-items:center; gap:0.6rem;">
                 <input type="hidden" name="callerIdRequired" value="0">
                 <input type="checkbox" name="callerIdRequired" value="1" {{ $requiresCallerId === '1' ? 'checked' : '' }}>
@@ -125,11 +118,11 @@
                 </select>
             </label>
             <label>Outbound Proxy (optional)
-            <input type="text"
-                name="outboundProxy"
-                value="{{ old('outboundProxy') }}"
-                placeholder="sip:169.197.85.204:5060">
-        </label>
+    <input type="text"
+           name="outboundProxy"
+           value="{{ old('outboundProxy') }}"
+           placeholder="e.g. sip:proxy.provider.com:5060 or proxy.provider.com">
+</label>
 
             <label><span class="required-badge"></span>Domain / IP*
                 <input type="text" name="sipDomain" value="{{ old('sipDomain') }}" placeholder="sip.provider.com" required>
@@ -157,7 +150,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const checkbox = document.querySelector('input[name="registrationRequired"][type="checkbox"]');
+            const checkbox = document.querySelector('input[name="registrationRequired"]');
             const regFields = document.getElementById('registration-fields');
             if (!checkbox || !regFields) {
                 return;

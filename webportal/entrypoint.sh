@@ -8,7 +8,6 @@ if [ ! -f "${TARGET_DIR}/artisan" ]; then
   echo "Populating Laravel application in ${TARGET_DIR}..."
   mkdir -p "${TARGET_DIR}"
   cp -a ${SOURCE_DIR}/. "${TARGET_DIR}/"
-  chown -R www-data:www-data "${TARGET_DIR}/storage" "${TARGET_DIR}/bootstrap/cache"
 fi
 
 cd "${TARGET_DIR}"
@@ -18,5 +17,10 @@ if [ ! -f "${TARGET_DIR}/vendor/autoload.php" ]; then
   composer install --no-dev --prefer-dist --no-interaction
   chown -R www-data:www-data "${TARGET_DIR}/vendor"
 fi
+
+echo "Ensuring writable storage and cache directories..."
+mkdir -p "${TARGET_DIR}/storage" "${TARGET_DIR}/bootstrap/cache"
+chown -R www-data:www-data "${TARGET_DIR}/storage" "${TARGET_DIR}/bootstrap/cache"
+chmod -R ug+rwX "${TARGET_DIR}/storage" "${TARGET_DIR}/bootstrap/cache"
 
 exec "$@"

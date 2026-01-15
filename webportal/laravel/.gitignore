@@ -18,7 +18,6 @@ app/Http/Controllers/Admin/*
 app/Http/Controllers/Auth/*
 !app/Http/Controllers/Auth/AdminAuthController.php
 !app/Http/Controllers/Auth/UserAuthController.php
-!app/Http/Controllers/Auth/PasswordResetController.php
 !app/Http/Controllers/DialerController.php
 !app/Http/Middleware/
 app/Http/Middleware/*
@@ -39,15 +38,11 @@ resources/views/layouts/*
 resources/views/auth/*
 !resources/views/auth/admin-login.blade.php
 !resources/views/auth/user-login.blade.php
-!resources/views/auth/forgot-password.blade.php
-!resources/views/auth/reset-password.blade.php
 !resources/views/admin/
 resources/views/admin/*
 !resources/views/admin/dashboard.blade.php
 !resources/views/admin/create-user.blade.php
 !resources/views/admin/carriers.blade.php
-!resources/views/admin/edit-user.blade.php
-!resources/views/admin/edit-carrier.blade.php
 !resources/views/dialer/
 resources/views/dialer/*
 !resources/views/dialer/index.blade.php

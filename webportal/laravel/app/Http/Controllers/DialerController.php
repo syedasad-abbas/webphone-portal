@@ -26,9 +26,6 @@ class DialerController extends Controller
             'destination' => ['required', 'string'],
             'callerId' => ['nullable', 'string'],
         ]);
-        if (empty(trim($data['callerId'] ?? ''))) {
-            $data['callerId'] = null;
-        }
 
         try {
             $response = Http::withToken($request->session()->get('user_token'))
